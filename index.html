@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Echoes — Memories Anchored in Place</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- TOAST -->
+  <div id="toast-container"></div>
+
+  <!-- UNLOCK MODAL -->
+  <div id="unlock-modal" class="modal-overlay hidden">
+    <div class="unlock-modal-inner">
+      <div class="unlock-burst"></div>
+      <div class="unlock-icon-wrap">🔓</div>
+      <h2 class="unlock-title">Memory Unlocked</h2>
+      <p id="unlock-subtitle-text" class="unlock-subtitle">You're back where it happened.</p>
+      <div id="unlock-content" class="unlock-content"></div>
+      <button class="btn-primary" onclick="closeUnlockModal()">Relive It ✦</button>
+    </div>
+  </div>
+
+  <!-- ===================== ENTRY SCREEN ===================== -->
+  <section id="screen-entry" class="screen active">
+    <div class="entry-bg">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+    <div class="entry-content">
+      <div class="entry-badge">✦ An Idea Worth Validating</div>
+      <h1 class="entry-title">Echoes</h1>
+      <p class="entry-tagline">Capture memories.<br/>Unlock them where they happened.</p>
+      <p class="entry-sub">Save photos &amp; messages at a place. Return to unlock.<br/>Leave hidden notes for people you love.</p>
+
+      <div class="entry-form">
+        <div class="input-group">
+          <label>Your name</label>
+          <input type="text" id="entry-username" placeholder="e.g. Aditya" maxlength="24" />
+        </div>
+        <div class="avatar-picker">
+          <label>Pick an avatar</label>
+          <div class="avatars">
+            <span class="avatar-opt selected" data-av="🌿">🌿</span>
+            <span class="avatar-opt" data-av="🌙">🌙</span>
+            <span class="avatar-opt" data-av="🔥">🔥</span>
+            <span class="avatar-opt" data-av="🌊">🌊</span>
+            <span class="avatar-opt" data-av="⚡">⚡</span>
+            <span class="avatar-opt" data-av="🪐">🪐</span>
+            <span class="avatar-opt" data-av="🦋">🦋</span>
+            <span class="avatar-opt" data-av="🎭">🎭</span>
+          </div>
+        </div>
+        <button class="btn-primary btn-entry" id="btn-enter-demo">Enter Demo →</button>
+        <p class="entry-note">No sign-up needed · Pure concept demo</p>
+      </div>
+
+      <div class="entry-cards-row">
+        <div class="mini-card"><span>📍</span><p>Save a memory here. Come back later. Unlock the moment.</p></div>
+        <div class="mini-card"><span>💌</span><p>Leave a hidden note for someone. They must visit the place to reveal it.</p></div>
+        <div class="mini-card"><span>🌍</span><p>Discover public drops nearby. Every place has a story.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== APP SHELL ===================== -->
+  <div id="app-shell" class="hidden">
+
+    <!-- SIDEBAR -->
+    <nav id="sidebar">
+      <div class="sidebar-logo"><span class="logo-mark">✦</span><span>Echoes</span></div>
+      <div class="user-pill" id="nav-user-pill">
+        <span id="nav-avatar">🌿</span>
+        <span id="nav-username">Explorer</span>
+      </div>
+      <ul class="nav-links">
+        <li><a href="#" class="nav-link active" data-screen="dashboard"><span>🏠</span><span>Home</span></a></li>
+        <li><a href="#" class="nav-link" data-screen="add-memory"><span>➕</span><span>Add Memory</span></a></li>
+        <li><a href="#" class="nav-link" data-screen="leave-message"><span>💌</span><span>Leave Message</span></a></li>
+        <li><a href="#" class="nav-link" data-screen="tagged"><span>🔔</span><span>Tagged For Me</span><span class="badge" id="tagged-badge">2</span></a></li>
+        <li><a href="#" class="nav-link" data-screen="unlock"><span>🔓</span><span>Unlock Nearby</span></a></li>
+        <li><a href="#" class="nav-link" data-screen="nearby"><span>🌐</span><span>Discoveries</span></a></li>
+        <li><a href="#" class="nav-link" data-screen="gallery"><span>🖼</span><span>Gallery</span></a></li>
+        <li><a href="#" class="nav-link" data-screen="places"><span>🗺</span><span>Places</span></a></li>
+        <li><a href="#" class="nav-link nav-feedback" data-screen="feedback"><span>💬</span><span>Feedback</span></a></li>
+      </ul>
+      <button class="btn-logout" id="btn-logout">← Exit Demo</button>
+    </nav>
+
+    <!-- MOBILE TOPBAR -->
+    <div class="mobile-topbar">
+      <div class="mobile-logo">✦ Echoes</div>
+      <button id="mobile-menu-btn" aria-label="Menu">☰</button>
+    </div>
+    <div id="mobile-nav-overlay" class="mobile-nav-overlay hidden"></div>
+
+    <!-- MAIN -->
+    <main id="main-content">
+
+      <!-- DASHBOARD -->
+      <section id="screen-dashboard" class="app-screen active">
+        <div class="dash-greeting">
+          <div class="greeting-left">
+            <p class="greeting-eyebrow">Welcome back</p>
+            <h2 class="screen-title">Hey <span id="dash-username">Explorer</span> <span id="dash-avatar"></span></h2>
+            <p class="screen-sub">Your memories are anchored in time and place.</p>
+          </div>
+          <div class="greeting-badge">MVP Demo</div>
+        </div>
+
+        <!-- STATS STRIP: 5 cards, large numbers, subtle glow -->
+        <div class="stats-strip">
+          <div class="stat-card">
+            <span class="stat-icon">🧠</span>
+            <span class="stat-num" id="stat-saved">0</span>
+            <span class="stat-label">Memories Saved</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">📍</span>
+            <span class="stat-num">4</span>
+            <span class="stat-label">Places Visited</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">🔓</span>
+            <span class="stat-num" id="stat-unlocked">0</span>
+            <span class="stat-label">Memories Unlocked</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">🌐</span>
+            <span class="stat-num">8</span>
+            <span class="stat-label">Nearby Drops</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">✨</span>
+            <span class="stat-num">24</span>
+            <span class="stat-label">Interactions</span>
+          </div>
+        </div>
+
+        <!-- ACTION CARDS GRID: icon + title + desc + hover animation -->
+        <h3 class="section-title section-title-gap">Quick Actions</h3>
+        <div class="cta-grid">
+          <button class="cta-card" data-screen="add-memory">
+            <span class="cta-icon">📷</span>
+            <span class="cta-label">Add Memory</span>
+            <span class="cta-desc">Anchor a photo to this exact place</span>
+            <span class="cta-arrow">→</span>
+          </button>
+          <button class="cta-card" data-screen="leave-message">
+            <span class="cta-icon">💌</span>
+            <span class="cta-label">Leave Message</span>
+            <span class="cta-desc">Hide a note for someone you love</span>
+            <span class="cta-arrow">→</span>
+          </button>
+          <!-- HIGHLIGHTED CORE FEATURE -->
+          <button class="cta-card cta-core" data-screen="unlock">
+            <span class="cta-core-glow"></span>
+            <span class="cta-icon">🔓</span>
+            <span class="cta-label">Unlock Nearby <span class="cta-core-badge">Core Feature</span></span>
+            <span class="cta-desc">Revisit a place to unlock your memories</span>
+            <span class="cta-arrow">→</span>
+          </button>
+          <button class="cta-card" data-screen="gallery">
+            <span class="cta-icon">🖼</span>
+            <span class="cta-label">View Memories</span>
+            <span class="cta-desc">Browse every moment you've locked</span>
+            <span class="cta-arrow">→</span>
+          </button>
+          <button class="cta-card" data-screen="nearby">
+            <span class="cta-icon">🌍</span>
+            <span class="cta-label">Explore Nearby</span>
+            <span class="cta-desc">Discover what others left around you</span>
+            <span class="cta-arrow">→</span>
+          </button>
+        </div>
+
+        <!-- NEARBY ACTIVITY (was "Happening Around You") -->
+        <h3 class="section-title section-title-gap">✦ Nearby Activity</h3>
+        <div class="teaser-cards">
+          <div class="teaser-card">
+            <span class="dot pulse-red"></span>
+            <div class="teaser-body">
+              <strong>2 hidden memories nearby</strong>
+              <p>Within 500m of your location</p>
+            </div>
+            <button class="teaser-action" data-screen="nearby">Explore →</button>
+          </div>
+          <div class="teaser-card">
+            <span class="dot pulse-amber"></span>
+            <div class="teaser-body">
+              <strong>Someone tagged you at a location</strong>
+              <p>Visit the place to unlock it</p>
+            </div>
+            <button class="teaser-action" data-screen="tagged">View →</button>
+          </div>
+          <div class="teaser-card">
+            <span class="dot pulse-green"></span>
+            <div class="teaser-body">
+              <strong>3 people interacted here today</strong>
+              <p>Public drop active nearby</p>
+            </div>
+            <button class="teaser-action" data-screen="nearby">Discover →</button>
+          </div>
+          <div class="teaser-card">
+            <span class="dot pulse-purple"></span>
+            <div class="teaser-body">
+              <strong>📸 Photography drop 450m away</strong>
+              <p>Unlocks when you visit the spot</p>
+            </div>
+            <button class="teaser-action" data-screen="nearby">Go →</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ADD MEMORY -->
+      <section id="screen-add-memory" class="app-screen">
+        <div class="screen-header">
+          <h2 class="screen-title">📷 Add Memory</h2>
+          <p class="screen-sub">Anchor a photo to this exact location.</p>
+        </div>
+        <div class="form-card">
+          <div class="upload-zone" id="upload-zone">
+            <div id="upload-placeholder"><span class="upload-icon">🖼</span><p>Tap to upload a photo</p><small>JPG, PNG up to 5MB</small></div>
+            <img id="upload-preview" class="hidden" alt="preview" />
+            <input type="file" id="file-input" accept="image/*" class="hidden" />
+          </div>
+          <div class="form-group hidden" id="filter-row">
+            <label class="form-label">Visual Filter</label>
+            <div class="filters">
+              <button class="filter-btn active" data-filter="original">Original</button>
+              <button class="filter-btn" data-filter="vintage">Vintage</button>
+              <button class="filter-btn" data-filter="warm">Warm</button>
+              <button class="filter-btn" data-filter="bw">B&W</button>
+              <button class="filter-btn" data-filter="cinematic">Cinematic</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Caption</label>
+            <textarea id="memory-caption" class="form-input" placeholder="What's this memory about?" rows="3" maxlength="200"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Interest Tag</label>
+            <select id="memory-tag" class="form-input">
+              <option value="nostalgia">🌀 Nostalgia</option>
+              <option value="travel">✈️ Travel</option>
+              <option value="food">🍜 Food</option>
+              <option value="photography">📸 Photography</option>
+              <option value="friendship">🤝 Friendship</option>
+              <option value="hidden">🕵️ Hidden Note</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Visibility</label>
+            <div class="toggle-row">
+              <button class="toggle-btn active" data-vis="private">🔒 Private</button>
+              <button class="toggle-btn" data-vis="public">🌐 Public</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Location</label>
+            <div class="location-status">
+              <span id="location-text">📍 Not fetched yet</span>
+              <button class="btn-secondary btn-sm" id="btn-fetch-location">Fetch My Location</button>
+            </div>
+          </div>
+          <button class="btn-primary btn-full" id="btn-save-memory">Save Memory ✦</button>
+        </div>
+      </section>
+
+      <!-- LEAVE MESSAGE -->
+      <section id="screen-leave-message" class="app-screen">
+        <div class="screen-header">
+          <h2 class="screen-title">💌 Leave a Message</h2>
+          <p class="screen-sub">Hide a note at a place. They must visit to reveal it.</p>
+        </div>
+        <div class="form-card">
+          <div class="form-group">
+            <label class="form-label">Message Type</label>
+            <div class="toggle-row">
+              <button class="toggle-btn active" data-msg-type="public">🌐 Public</button>
+              <button class="toggle-btn" data-msg-type="private">👤 Private</button>
+              <button class="toggle-btn" data-msg-type="interest">🏷 Interest Drop</button>
+            </div>
+          </div>
+          <div class="form-group hidden" id="tagged-person-group">
+            <label class="form-label">Tag a Person</label>
+            <input type="text" id="msg-tagged-person" class="form-input" placeholder="Their username e.g. Arun" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Your Message</label>
+            <textarea id="msg-text" class="form-input" placeholder="Write something meaningful..." rows="4" maxlength="300"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Interest Tag</label>
+            <select id="msg-tag" class="form-input">
+              <option value="travel">✈️ Travel</option>
+              <option value="food">🍜 Food</option>
+              <option value="photography">📸 Photography</option>
+              <option value="friendship">🤝 Friendship</option>
+              <option value="nostalgia">🌀 Nostalgia</option>
+              <option value="hidden">🕵️ Hidden Note</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Unlock Radius</label>
+            <select id="msg-radius" class="form-input">
+              <option value="50">50m — Very precise</option>
+              <option value="100" selected>100m — Standard</option>
+              <option value="250">250m — Neighbourhood</option>
+              <option value="500">500m — District wide</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Location</label>
+            <div class="location-status">
+              <span id="msg-location-text">📍 Not fetched yet</span>
+              <button class="btn-secondary btn-sm" id="btn-fetch-msg-location">Fetch My Location</button>
+            </div>
+          </div>
+          <button class="btn-primary btn-full" id="btn-save-message">Leave This Message ✦</button>
+        </div>
+      </section>
+
+      <!-- TAGGED FOR ME -->
+      <section id="screen-tagged" class="app-screen">
+        <div class="screen-header">
+          <h2 class="screen-title">🔔 Tagged For Me</h2>
+          <p class="screen-sub">Someone left something for you. Visit the place to unlock.</p>
+        </div>
+        <div id="tagged-list" class="card-list"></div>
+      </section>
+
+      <!-- UNLOCK NEARBY -->
+      <section id="screen-unlock" class="app-screen">
+        <div class="screen-header">
+          <h2 class="screen-title">🔓 Unlock Nearby</h2>
+          <p class="screen-sub">Revisit a place to unlock your memories.</p>
+        </div>
+        <div class="info-card">
+          <p>We compare your current location with your saved memory locations. If you're within <strong>100 meters</strong>, the memory unlocks.</p>
+          <button class="btn-primary" id="btn-do-unlock">Check My Location & Unlock</button>
+        </div>
+        <div id="unlock-list" class="card-list"></div>
+      </section>
+
+      <!-- NEARBY DISCOVERIES -->
+      <section id="screen-nearby" class="app-screen">
+        <div class="screen-header">
+          <h2 class="screen-title">🌍 Nearby Discoveries</h2>
+          <p class="screen-sub">Public memory drops around you.</p>
+        </div>
+        <div class="filter-bar">
+          <button class="filter-tag active" data-interest="all">All</button>
+          <button class="filter-tag" data-interest="travel">✈️ Travel</button>
+          <button class="filter-tag" data-interest="food">🍜 Food</button>
+          <button class="filter-tag" data-interest="photography">📸 Photography</button>
+          <button class="filter-tag" data-interest="friendship">🤝 Friendship</button>
+          <button class="filter-tag" data-interest="nostalgia">🌀 Nostalgia</button>
+          <button class="filter-tag" data-interest="hidden">🕵️ Hidden</button>
+        </div>
+        <div id="nearby-list" class="card-list"></div>
+      </section>
+
+      <!-- GALLERY -->
+      <section id="screen-gallery" class="app-screen">
+        <div class="screen-header">
+          <h2 class="screen-title">🖼 Memory Gallery</h2>
+          <p class="screen-sub">All your anchored moments.</p>
+        </div>
+        <div class="filter-bar">
+          <button class="filter-tag active" data-gallery="all">All</button>
+          <button class="filter-tag" data-gallery="locked">🔒 Locked</button>
+          <button class="filter-tag" data-gallery="unlocked">🔓 Unlocked</button>
+          <button class="filter-tag" data-gallery="public">🌐 Public</button>
+          <button class="filter-tag" data-gallery="private">👤 Private</button>
+          <button class="filter-tag" data-gallery="recent">🕐 Recent</button>
+        </div>
+        <div id="gallery-grid" class="gallery-grid"></div>
+      </section>
+
+      <!-- PLACES -->
+      <section id="screen-places" class="app-screen">
+        <div class="screen-header">
+          <h2 class="screen-title">🗺 Places</h2>
+          <p class="screen-sub">Every place you've left an echo.</p>
+        </div>
+        <div class="fake-map">
+          <div class="map-pin" style="top:30%;left:38%">📍<span class="pin-label">Pune Café</span></div>
+          <div class="map-pin" style="top:55%;left:62%">📍<span class="pin-label">MG Road</span></div>
+          <div class="map-pin" style="top:42%;left:22%">📍<span class="pin-label">Campus</span></div>
+          <div class="map-pin" style="top:68%;left:45%">📍<span class="pin-label">Skybar</span></div>
+        </div>
+        <div id="places-list" class="card-list"></div>
+      </section>
+
+      <!-- FEEDBACK -->
+      <section id="screen-feedback" class="app-screen">
+        <div class="screen-header">
+          <h2 class="screen-title">💬 Share Your Feedback</h2>
+          <p class="screen-sub">Help shape Echoes. Your thoughts matter most at this stage.</p>
+        </div>
+        <div class="form-card feedback-hero">
+          <div class="feedback-intro">
+            <span>✦</span>
+            <p>This is an MVP concept demo for validating interest. No fluff — just your honest thoughts. Every response is read by the builder.</p>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Your Name <em>(optional)</em></label>
+            <input type="text" id="fb-name" class="form-input" placeholder="Leave blank to stay anonymous" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email <em>(optional, for updates)</em></label>
+            <input type="email" id="fb-email" class="form-input" placeholder="hello@example.com" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Rate the concept</label>
+            <div class="star-row" id="star-row">
+              <span class="star" data-v="1">★</span>
+              <span class="star" data-v="2">★</span>
+              <span class="star" data-v="3">★</span>
+              <span class="star" data-v="4">★</span>
+              <span class="star" data-v="5">★</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">What excites you most?</label>
+            <div class="check-group" id="excites-group">
+              <label class="check-item"><input type="checkbox" value="unlock" /> Unlocking memories at a real place</label>
+              <label class="check-item"><input type="checkbox" value="messages" /> Leaving hidden messages for people</label>
+              <label class="check-item"><input type="checkbox" value="discovery" /> Discovering public drops nearby</label>
+              <label class="check-item"><input type="checkbox" value="social" /> Social interaction layer</label>
+              <label class="check-item"><input type="checkbox" value="nostalgia" /> The nostalgia and emotional angle</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Would you use this app?</label>
+            <div class="toggle-row" id="would-use-row">
+              <button class="toggle-btn" data-use="definitely">Definitely ✓</button>
+              <button class="toggle-btn" data-use="maybe">Maybe</button>
+              <button class="toggle-btn" data-use="no">Probably not</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">What feature would make you install it right now?</label>
+            <textarea id="fb-killer" class="form-input" rows="3" placeholder="e.g. Real map view, AR unlock, group memories..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Anything else?</label>
+            <textarea id="fb-other" class="form-input" rows="4" placeholder="Bugs, ideas, feelings, suggestions..."></textarea>
+          </div>
+          <button class="btn-primary btn-full" id="btn-submit-feedback">Submit Feedback ✦</button>
+          <p class="feedback-note">Responses are saved locally in your browser for this demo session.</p>
+        </div>
+        <div id="feedback-responses-section" class="hidden">
+          <h3 class="section-title">✦ Previous Responses</h3>
+          <div id="feedback-list" class="card-list"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
