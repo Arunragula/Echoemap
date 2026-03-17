@@ -1,471 +1,486 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Echoes — Memories Anchored in Place</title>
-  <link rel="stylesheet" href="style.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+  <title>Echoes — Unlock Memories Where They Happened</title>
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="theme-color" content="#c8a96e"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Echoes"/>
+  <link rel="apple-touch-icon" href="icons/icon-192.png"/>
+  <meta name="description" content="Drop memories at real places. Return to unlock them."/>
+  <meta property="og:title" content="Echoes — Memories Unlocked by Place"/>
+  <meta property="og:description" content="Capture memories. Unlock them where they happened."/>
+  <meta property="og:type" content="website"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="styles/style.css"/>
+  <link rel="stylesheet" href="styles/footer.css"/>
 </head>
 <body>
 
-  <!-- TOAST -->
-  <div id="toast-container"></div>
+<!-- TOAST -->
+<div id="toast" class="toast hidden"></div>
 
-  <!-- UNLOCK MODAL -->
-  <div id="unlock-modal" class="modal-overlay hidden">
-    <div class="unlock-modal-inner">
-      <div class="unlock-burst"></div>
-      <div class="unlock-icon-wrap">🔓</div>
-      <h2 class="unlock-title">Memory Unlocked</h2>
-      <p id="unlock-subtitle-text" class="unlock-subtitle">You're back where it happened.</p>
-      <div id="unlock-content" class="unlock-content"></div>
-      <button class="btn-primary" onclick="closeUnlockModal()">Relive It ✦</button>
+<!-- iOS install banner -->
+<div id="ios-banner" class="ios-banner hidden">
+  <span class="ios-logo">◎</span>
+  <span>Tap <strong>Share</strong> → <strong>Add to Home Screen</strong></span>
+  <button class="ios-close" onclick="this.parentElement.classList.add('hidden')">✕</button>
+</div>
+
+<!-- PWA install fab -->
+<button id="btn-pwa-install" class="pwa-fab hidden" onclick="installPWA()">↓ Install App</button>
+
+<!-- ══════════════════════════════════════
+     LANDING PAGE — normal scroll, NOT fixed
+══════════════════════════════════════ -->
+<div id="landing">
+
+  <!-- Background (absolute, not fixed) -->
+  <div class="landing-bg">
+    <div class="orb o1"></div>
+    <div class="orb o2"></div>
+    <div class="orb o3"></div>
+    <div class="orb o4"></div>
+    <div class="grain"></div>
+    <div class="entry-grid"></div>
+  </div>
+
+  <!-- Sticky topnav -->
+  <div class="entry-topnav">
+    <div class="entry-topnav-logo">
+      <div class="logo-symbol">◎</div>
+      <div class="logo-wordmark">Echoes</div>
+      <div class="logo-tagline-small">Beta</div>
     </div>
   </div>
 
-  <!-- ===================== ENTRY SCREEN ===================== -->
-  <section id="screen-entry" class="screen active">
-    <div class="entry-bg">
-      <div class="orb orb-1"></div>
-      <div class="orb orb-2"></div>
-      <div class="orb orb-3"></div>
-    </div>
-    <div class="entry-content">
-      <div class="entry-badge">✦ An Idea Worth Validating</div>
-      <h1 class="entry-title">Echoes</h1>
-      <p class="entry-tagline">Capture memories.<br/>Unlock them where they happened.</p>
-      <p class="entry-sub">Save photos &amp; messages at a place. Return to unlock.<br/>Leave hidden notes for people you love.</p>
+  <!-- Hero split -->
+  <div class="entry-split">
 
-      <div class="entry-form">
-        <div class="input-group">
-          <label>Your name</label>
-          <input type="text" id="entry-username" placeholder="e.g. Aditya" maxlength="24" />
+    <!-- LEFT -->
+    <div class="entry-left">
+      <div class="entry-left-inner">
+        <h1 class="entry-headline">
+          <span class="eh-line eh-l1">Capture</span>
+          <span class="eh-line eh-l2">memories.</span>
+          <span class="eh-line eh-l3"><em>Unlock them</em></span>
+          <span class="eh-line eh-l4"><em>where they</em></span>
+          <span class="eh-line eh-l5"><em>happened.</em></span>
+        </h1>
+        <p class="entry-desc">Drop a photo or message at any real place. Return someday — it unlocks only when you're physically back there.</p>
+        <div class="entry-features">
+          <div class="ef-pill"><span class="ef-icon">🔒</span><div><div class="ef-title">Location-locked</div><div class="ef-sub">Memories tied to GPS coordinates</div></div></div>
+          <div class="ef-pill"><span class="ef-icon">💌</span><div><div class="ef-title">Tag someone</div><div class="ef-sub">Leave hidden notes for people you love</div></div></div>
+          <div class="ef-pill"><span class="ef-icon">🌐</span><div><div class="ef-title">Discover drops</div><div class="ef-sub">Find public memories others left nearby</div></div></div>
+          <div class="ef-pill"><span class="ef-icon">📸</span><div><div class="ef-title">Photo filters</div><div class="ef-sub">Vintage, warm, cinematic and more</div></div></div>
         </div>
-        <div class="avatar-picker">
-          <label>Pick an avatar</label>
-          <div class="avatars">
-            <span class="avatar-opt selected" data-av="🌿">🌿</span>
-            <span class="avatar-opt" data-av="🌙">🌙</span>
-            <span class="avatar-opt" data-av="🔥">🔥</span>
-            <span class="avatar-opt" data-av="🌊">🌊</span>
-            <span class="avatar-opt" data-av="⚡">⚡</span>
-            <span class="avatar-opt" data-av="🪐">🪐</span>
-            <span class="avatar-opt" data-av="🦋">🦋</span>
-            <span class="avatar-opt" data-av="🎭">🎭</span>
-          </div>
+        <div class="entry-social-proof">
+          <div class="esp-avatars"><span>🌙</span><span>🔥</span><span>🌿</span><span>🌊</span><span>✨</span></div>
+          <div class="esp-text">Join early explorers testing Echoes</div>
         </div>
-        <button class="btn-primary btn-entry" id="btn-enter-demo">Enter Demo →</button>
-        <p class="entry-note">No sign-up needed · Pure concept demo</p>
-      </div>
-
-      <div class="entry-cards-row">
-        <div class="mini-card"><span>📍</span><p>Save a memory here. Come back later. Unlock the moment.</p></div>
-        <div class="mini-card"><span>💌</span><p>Leave a hidden note for someone. They must visit the place to reveal it.</p></div>
-        <div class="mini-card"><span>🌍</span><p>Discover public drops nearby. Every place has a story.</p></div>
       </div>
     </div>
-  </section>
 
-  <!-- ===================== APP SHELL ===================== -->
-  <div id="app-shell" class="hidden">
-
-    <!-- SIDEBAR -->
-    <nav id="sidebar">
-      <div class="sidebar-logo"><span class="logo-mark">✦</span><span>Echoes</span></div>
-      <div class="user-pill" id="nav-user-pill">
-        <span id="nav-avatar">🌿</span>
-        <span id="nav-username">Explorer</span>
+    <!-- RIGHT — auth card -->
+    <div class="entry-right">
+      <div class="auth-card" id="auth-card">
+        <div id="auth-step-1" class="auth-step active">
+          <div class="auth-card-header">
+            <h2 class="auth-title">Begin your journey</h2>
+            <p class="auth-sub">Every place holds a story. Start dropping yours.</p>
+          </div>
+          <button class="btn-google" onclick="signInGoogle()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            Continue with Google
+          </button>
+          <div class="auth-divider"><span>or</span></div>
+          <div class="auth-name-form">
+            <div class="field-group">
+              <label class="fl">Your name</label>
+              <input id="e-name" type="text" placeholder="e.g. Arun" maxlength="24" autocomplete="nickname" onkeydown="if(event.key==='Enter')enterApp()"/>
+            </div>
+            <div class="field-group">
+              <label class="fl">Pick your avatar</label>
+              <div class="av-grid">
+                <button class="av-btn sel" data-av="🌙" onclick="pickAv(this)">🌙</button>
+                <button class="av-btn" data-av="🔥" onclick="pickAv(this)">🔥</button>
+                <button class="av-btn" data-av="🌿" onclick="pickAv(this)">🌿</button>
+                <button class="av-btn" data-av="🌊" onclick="pickAv(this)">🌊</button>
+                <button class="av-btn" data-av="✨" onclick="pickAv(this)">✨</button>
+                <button class="av-btn" data-av="📸" onclick="pickAv(this)">📸</button>
+                <button class="av-btn" data-av="🎭" onclick="pickAv(this)">🎭</button>
+                <button class="av-btn" data-av="🗺️" onclick="pickAv(this)">🗺️</button>
+              </div>
+            </div>
+            <button class="btn-primary bfull" onclick="enterApp()">Start Dropping Memories →</button>
+          </div>
+          <button class="btn-ghost bfull" style="margin-top:.5rem" onclick="enterDemo()">Explore Demo First</button>
+          <p class="auth-terms">By continuing you agree to our <a href="#" onclick="return false">Terms</a> and <a href="#" onclick="return false">Privacy Policy</a>. No spam, ever.</p>
+        </div>
+        <div id="auth-step-otp" class="auth-step">
+          <div class="auth-card-header">
+            <button class="auth-back" onclick="showAuthStep(1)">← Back</button>
+            <h2 class="auth-title">Verify your number</h2>
+            <p class="auth-sub">Enter the 6-digit code we sent</p>
+          </div>
+          <div class="field-group">
+            <label class="fl">6-digit OTP</label>
+            <input id="otp-input" type="number" placeholder="123456" maxlength="6"/>
+          </div>
+          <button class="btn-primary bfull" onclick="verifyOTP()">Verify & Continue →</button>
+          <div id="recaptcha-container"></div>
+        </div>
       </div>
-      <ul class="nav-links">
-        <li><a href="#" class="nav-link active" data-screen="dashboard"><span>🏠</span><span>Home</span></a></li>
-        <li><a href="#" class="nav-link" data-screen="add-memory"><span>➕</span><span>Add Memory</span></a></li>
-        <li><a href="#" class="nav-link" data-screen="leave-message"><span>💌</span><span>Leave Message</span></a></li>
-        <li><a href="#" class="nav-link" data-screen="tagged"><span>🔔</span><span>Tagged For Me</span><span class="badge" id="tagged-badge">2</span></a></li>
-        <li><a href="#" class="nav-link" data-screen="unlock"><span>🔓</span><span>Unlock Nearby</span></a></li>
-        <li><a href="#" class="nav-link" data-screen="nearby"><span>🌐</span><span>Discoveries</span></a></li>
-        <li><a href="#" class="nav-link" data-screen="gallery"><span>🖼</span><span>Gallery</span></a></li>
-        <li><a href="#" class="nav-link" data-screen="places"><span>🗺</span><span>Places</span></a></li>
-        <li><a href="#" class="nav-link nav-feedback" data-screen="feedback"><span>💬</span><span>Feedback</span></a></li>
-      </ul>
-      <button class="btn-logout" id="btn-logout">← Exit Demo</button>
-    </nav>
-
-    <!-- MOBILE TOPBAR -->
-    <div class="mobile-topbar">
-      <div class="mobile-logo">✦ Echoes</div>
-      <button id="mobile-menu-btn" aria-label="Menu">☰</button>
+      <div class="mobile-entry-hint">
+        <span>🔒 Location-locked</span><span>💌 Tag someone</span><span>🌐 Discover drops</span>
+      </div>
     </div>
-    <div id="mobile-nav-overlay" class="mobile-nav-overlay hidden"></div>
 
-    <!-- MAIN -->
-    <main id="main-content">
+  </div><!-- /entry-split -->
 
-      <!-- DASHBOARD -->
-      <section id="screen-dashboard" class="app-screen active">
-        <div class="dash-greeting">
-          <div class="greeting-left">
-            <p class="greeting-eyebrow">Welcome back</p>
-            <h2 class="screen-title">Hey <span id="dash-username">Explorer</span> <span id="dash-avatar"></span></h2>
-            <p class="screen-sub">Your memories are anchored in time and place.</p>
+  <!-- ══ FOOTER — naturally after hero, scrolls normally ══ -->
+  <footer class="ef-wrap">
+    <div class="ef-divider">
+      <svg viewBox="0 0 1440 50" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0,35 C240,0 480,50 720,25 C960,0 1200,45 1440,15 L1440,50 L0,50 Z" fill="rgba(200,169,110,0.05)"/>
+      </svg>
+    </div>
+    <div class="ef-body">
+      <div class="ef-top-row">
+        <!-- Brand -->
+        <div class="ef-brand">
+          <div class="ef-logo-row">
+            <span class="ef-mark">◎</span>
+            <span class="ef-word">Echoes</span>
+            <span class="ef-beta">Beta</span>
           </div>
-          <div class="greeting-badge">MVP Demo</div>
+          <p class="ef-desc">Drop a memory at any real place.<br>Return someday — it unlocks only<br>when you're physically back there.</p>
+          <div class="ef-stats">
+            <div class="ef-stat"><span class="ef-stat-n">∞</span><span class="ef-stat-l">Memories</span></div>
+            <div class="ef-stat-div"></div>
+            <div class="ef-stat"><span class="ef-stat-n">🌍</span><span class="ef-stat-l">Global</span></div>
+            <div class="ef-stat-div"></div>
+            <div class="ef-stat"><span class="ef-stat-n">Free</span><span class="ef-stat-l">Always</span></div>
+          </div>
+          <div class="ef-socials">
+            <a class="ef-soc" href="#" title="Twitter / X" onclick="return false">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.736-8.855L1.255 2.25H8.08l4.258 5.63 5.906-5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            </a>
+            <a class="ef-soc" href="#" title="Instagram" onclick="return false">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            </a>
+            <a class="ef-soc" href="#" title="WhatsApp" onclick="return false">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            </a>
+            <a class="ef-soc" href="#" title="LinkedIn" onclick="return false">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            </a>
+          </div>
         </div>
+        <!-- Nav cols -->
+        <div class="ef-nav-cols">
+          <div class="ef-col">
+            <div class="ef-col-head">Product</div>
+            <ul>
+              <li><a href="#" onclick="enterDemo();return false">Try Demo</a></li>
+              <li><a href="#" onclick="return false">How it works</a></li>
+              <li><a href="#" onclick="return false">Features</a></li>
+              <li><a href="#" onclick="return false">Install App</a></li>
+              <li><a href="#" onclick="return false">Changelog</a></li>
+            </ul>
+          </div>
+          <div class="ef-col">
+            <div class="ef-col-head">Explore</div>
+            <ul>
+              <li><a href="#" onclick="return false">Nearby Drops</a></li>
+              <li><a href="#" onclick="return false">Memory Map</a></li>
+              <li><a href="#" onclick="return false">Interest Tags</a></li>
+              <li><a href="#" onclick="return false">Leaderboard</a></li>
+              <li><a href="#" onclick="return false">Community</a></li>
+            </ul>
+          </div>
+          <div class="ef-col">
+            <div class="ef-col-head">Company</div>
+            <ul>
+              <li><a href="#" onclick="return false">About Echoes</a></li>
+              <li><a href="#" onclick="return false">Blog</a></li>
+              <li><a href="#" onclick="return false">Privacy Policy</a></li>
+              <li><a href="#" onclick="return false">Terms of Use</a></li>
+              <li><a href="#" onclick="return false">Contact Us</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <!-- CTA strip -->
+      <div class="ef-cta-strip">
+        <div class="ef-cta-left">
+          <span class="ef-cta-icon">📱</span>
+          <div>
+            <div class="ef-cta-title">Install as an app — no App Store needed</div>
+            <div class="ef-cta-sub">Tap Share → Add to Home Screen on iOS · Auto-prompt on Android</div>
+          </div>
+        </div>
+        <button class="ef-cta-btn" onclick="if(typeof installPWA==='function')installPWA()">Add to Home Screen →</button>
+      </div>
+      <!-- Bottom bar -->
+      <div class="ef-bottom">
+        <div class="ef-bottom-left">
+          <span class="ef-copy">© 2025 Echoes</span>
+          <span class="ef-dot-sep">·</span>
+          <span class="ef-india">Made with ♥ in India</span>
+          <span class="ef-dot-sep">·</span>
+          <span class="ef-copy">MVP Beta</span>
+        </div>
+        <div class="ef-bottom-center">
+          <a href="#" class="ef-legal" onclick="return false">Privacy</a>
+          <span class="ef-dot-sep">·</span>
+          <a href="#" class="ef-legal" onclick="return false">Terms</a>
+          <span class="ef-dot-sep">·</span>
+          <a href="#" class="ef-legal" onclick="return false">Cookies</a>
+        </div>
+        <div class="ef-bottom-right">
+          <span class="ef-status-dot"></span>
+          <span class="ef-status-txt">All systems live</span>
+        </div>
+      </div>
+    </div>
+  </footer>
 
-        <!-- STATS STRIP: 5 cards, large numbers, subtle glow -->
-        <div class="stats-strip">
-          <div class="stat-card">
-            <span class="stat-icon">🧠</span>
-            <span class="stat-num" id="stat-saved">0</span>
-            <span class="stat-label">Memories Saved</span>
-          </div>
-          <div class="stat-card">
-            <span class="stat-icon">📍</span>
-            <span class="stat-num">4</span>
-            <span class="stat-label">Places Visited</span>
-          </div>
-          <div class="stat-card">
-            <span class="stat-icon">🔓</span>
-            <span class="stat-num" id="stat-unlocked">0</span>
-            <span class="stat-label">Memories Unlocked</span>
-          </div>
-          <div class="stat-card">
-            <span class="stat-icon">🌐</span>
-            <span class="stat-num">8</span>
-            <span class="stat-label">Nearby Drops</span>
-          </div>
-          <div class="stat-card">
-            <span class="stat-icon">✨</span>
-            <span class="stat-num">24</span>
-            <span class="stat-label">Interactions</span>
-          </div>
-        </div>
+</div><!-- /landing -->
 
-        <!-- ACTION CARDS GRID: icon + title + desc + hover animation -->
-        <h3 class="section-title section-title-gap">Quick Actions</h3>
-        <div class="cta-grid">
-          <button class="cta-card" data-screen="add-memory">
-            <span class="cta-icon">📷</span>
-            <span class="cta-label">Add Memory</span>
-            <span class="cta-desc">Anchor a photo to this exact place</span>
-            <span class="cta-arrow">→</span>
-          </button>
-          <button class="cta-card" data-screen="leave-message">
-            <span class="cta-icon">💌</span>
-            <span class="cta-label">Leave Message</span>
-            <span class="cta-desc">Hide a note for someone you love</span>
-            <span class="cta-arrow">→</span>
-          </button>
-          <!-- HIGHLIGHTED CORE FEATURE -->
-          <button class="cta-card cta-core" data-screen="unlock">
-            <span class="cta-core-glow"></span>
-            <span class="cta-icon">🔓</span>
-            <span class="cta-label">Unlock Nearby <span class="cta-core-badge">Core Feature</span></span>
-            <span class="cta-desc">Revisit a place to unlock your memories</span>
-            <span class="cta-arrow">→</span>
-          </button>
-          <button class="cta-card" data-screen="gallery">
-            <span class="cta-icon">🖼</span>
-            <span class="cta-label">View Memories</span>
-            <span class="cta-desc">Browse every moment you've locked</span>
-            <span class="cta-arrow">→</span>
-          </button>
-          <button class="cta-card" data-screen="nearby">
-            <span class="cta-icon">🌍</span>
-            <span class="cta-label">Explore Nearby</span>
-            <span class="cta-desc">Discover what others left around you</span>
-            <span class="cta-arrow">→</span>
-          </button>
+<!-- ══════════════════════════════════════
+     APP SHELL — hidden until login
+══════════════════════════════════════ -->
+<div id="app" class="hidden">
+  <nav id="sidebar" class="sidebar">
+    <div class="sb-top">
+      <div class="sb-logo">
+        <span class="sb-logo-mark">◎</span>
+        <span class="sb-logo-text">Echoes</span>
+      </div>
+      <div class="sb-user" id="sb-user">
+        <div class="sb-av-wrap">
+          <span class="sb-av" id="sb-av">🌙</span>
+          <span class="sb-av-ring"></span>
         </div>
-
-        <!-- NEARBY ACTIVITY (was "Happening Around You") -->
-        <h3 class="section-title section-title-gap">✦ Nearby Activity</h3>
-        <div class="teaser-cards">
-          <div class="teaser-card">
-            <span class="dot pulse-red"></span>
-            <div class="teaser-body">
-              <strong>2 hidden memories nearby</strong>
-              <p>Within 500m of your location</p>
-            </div>
-            <button class="teaser-action" data-screen="nearby">Explore →</button>
-          </div>
-          <div class="teaser-card">
-            <span class="dot pulse-amber"></span>
-            <div class="teaser-body">
-              <strong>Someone tagged you at a location</strong>
-              <p>Visit the place to unlock it</p>
-            </div>
-            <button class="teaser-action" data-screen="tagged">View →</button>
-          </div>
-          <div class="teaser-card">
-            <span class="dot pulse-green"></span>
-            <div class="teaser-body">
-              <strong>3 people interacted here today</strong>
-              <p>Public drop active nearby</p>
-            </div>
-            <button class="teaser-action" data-screen="nearby">Discover →</button>
-          </div>
-          <div class="teaser-card">
-            <span class="dot pulse-purple"></span>
-            <div class="teaser-body">
-              <strong>📸 Photography drop 450m away</strong>
-              <p>Unlocks when you visit the spot</p>
-            </div>
-            <button class="teaser-action" data-screen="nearby">Go →</button>
-          </div>
+        <div class="sb-info">
+          <div class="sb-name" id="sb-name">Explorer</div>
+          <div class="sb-handle" id="sb-handle">@explorer</div>
         </div>
-      </section>
-
-      <!-- ADD MEMORY -->
-      <section id="screen-add-memory" class="app-screen">
-        <div class="screen-header">
-          <h2 class="screen-title">📷 Add Memory</h2>
-          <p class="screen-sub">Anchor a photo to this exact location.</p>
-        </div>
-        <div class="form-card">
-          <div class="upload-zone" id="upload-zone">
-            <div id="upload-placeholder"><span class="upload-icon">🖼</span><p>Tap to upload a photo</p><small>JPG, PNG up to 5MB</small></div>
-            <img id="upload-preview" class="hidden" alt="preview" />
-            <input type="file" id="file-input" accept="image/*" class="hidden" />
-          </div>
-          <div class="form-group hidden" id="filter-row">
-            <label class="form-label">Visual Filter</label>
-            <div class="filters">
-              <button class="filter-btn active" data-filter="original">Original</button>
-              <button class="filter-btn" data-filter="vintage">Vintage</button>
-              <button class="filter-btn" data-filter="warm">Warm</button>
-              <button class="filter-btn" data-filter="bw">B&W</button>
-              <button class="filter-btn" data-filter="cinematic">Cinematic</button>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Caption</label>
-            <textarea id="memory-caption" class="form-input" placeholder="What's this memory about?" rows="3" maxlength="200"></textarea>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Interest Tag</label>
-            <select id="memory-tag" class="form-input">
-              <option value="nostalgia">🌀 Nostalgia</option>
-              <option value="travel">✈️ Travel</option>
-              <option value="food">🍜 Food</option>
-              <option value="photography">📸 Photography</option>
-              <option value="friendship">🤝 Friendship</option>
-              <option value="hidden">🕵️ Hidden Note</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Visibility</label>
-            <div class="toggle-row">
-              <button class="toggle-btn active" data-vis="private">🔒 Private</button>
-              <button class="toggle-btn" data-vis="public">🌐 Public</button>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Location</label>
-            <div class="location-status">
-              <span id="location-text">📍 Not fetched yet</span>
-              <button class="btn-secondary btn-sm" id="btn-fetch-location">Fetch My Location</button>
-            </div>
-          </div>
-          <button class="btn-primary btn-full" id="btn-save-memory">Save Memory ✦</button>
-        </div>
-      </section>
-
-      <!-- LEAVE MESSAGE -->
-      <section id="screen-leave-message" class="app-screen">
-        <div class="screen-header">
-          <h2 class="screen-title">💌 Leave a Message</h2>
-          <p class="screen-sub">Hide a note at a place. They must visit to reveal it.</p>
-        </div>
-        <div class="form-card">
-          <div class="form-group">
-            <label class="form-label">Message Type</label>
-            <div class="toggle-row">
-              <button class="toggle-btn active" data-msg-type="public">🌐 Public</button>
-              <button class="toggle-btn" data-msg-type="private">👤 Private</button>
-              <button class="toggle-btn" data-msg-type="interest">🏷 Interest Drop</button>
-            </div>
-          </div>
-          <div class="form-group hidden" id="tagged-person-group">
-            <label class="form-label">Tag a Person</label>
-            <input type="text" id="msg-tagged-person" class="form-input" placeholder="Their username e.g. Arun" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Your Message</label>
-            <textarea id="msg-text" class="form-input" placeholder="Write something meaningful..." rows="4" maxlength="300"></textarea>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Interest Tag</label>
-            <select id="msg-tag" class="form-input">
-              <option value="travel">✈️ Travel</option>
-              <option value="food">🍜 Food</option>
-              <option value="photography">📸 Photography</option>
-              <option value="friendship">🤝 Friendship</option>
-              <option value="nostalgia">🌀 Nostalgia</option>
-              <option value="hidden">🕵️ Hidden Note</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Unlock Radius</label>
-            <select id="msg-radius" class="form-input">
-              <option value="50">50m — Very precise</option>
-              <option value="100" selected>100m — Standard</option>
-              <option value="250">250m — Neighbourhood</option>
-              <option value="500">500m — District wide</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Location</label>
-            <div class="location-status">
-              <span id="msg-location-text">📍 Not fetched yet</span>
-              <button class="btn-secondary btn-sm" id="btn-fetch-msg-location">Fetch My Location</button>
-            </div>
-          </div>
-          <button class="btn-primary btn-full" id="btn-save-message">Leave This Message ✦</button>
-        </div>
-      </section>
-
-      <!-- TAGGED FOR ME -->
-      <section id="screen-tagged" class="app-screen">
-        <div class="screen-header">
-          <h2 class="screen-title">🔔 Tagged For Me</h2>
-          <p class="screen-sub">Someone left something for you. Visit the place to unlock.</p>
-        </div>
-        <div id="tagged-list" class="card-list"></div>
-      </section>
-
-      <!-- UNLOCK NEARBY -->
-      <section id="screen-unlock" class="app-screen">
-        <div class="screen-header">
-          <h2 class="screen-title">🔓 Unlock Nearby</h2>
-          <p class="screen-sub">Revisit a place to unlock your memories.</p>
-        </div>
-        <div class="info-card">
-          <p>We compare your current location with your saved memory locations. If you're within <strong>100 meters</strong>, the memory unlocks.</p>
-          <button class="btn-primary" id="btn-do-unlock">Check My Location & Unlock</button>
-        </div>
-        <div id="unlock-list" class="card-list"></div>
-      </section>
-
-      <!-- NEARBY DISCOVERIES -->
-      <section id="screen-nearby" class="app-screen">
-        <div class="screen-header">
-          <h2 class="screen-title">🌍 Nearby Discoveries</h2>
-          <p class="screen-sub">Public memory drops around you.</p>
-        </div>
-        <div class="filter-bar">
-          <button class="filter-tag active" data-interest="all">All</button>
-          <button class="filter-tag" data-interest="travel">✈️ Travel</button>
-          <button class="filter-tag" data-interest="food">🍜 Food</button>
-          <button class="filter-tag" data-interest="photography">📸 Photography</button>
-          <button class="filter-tag" data-interest="friendship">🤝 Friendship</button>
-          <button class="filter-tag" data-interest="nostalgia">🌀 Nostalgia</button>
-          <button class="filter-tag" data-interest="hidden">🕵️ Hidden</button>
-        </div>
-        <div id="nearby-list" class="card-list"></div>
-      </section>
-
-      <!-- GALLERY -->
-      <section id="screen-gallery" class="app-screen">
-        <div class="screen-header">
-          <h2 class="screen-title">🖼 Memory Gallery</h2>
-          <p class="screen-sub">All your anchored moments.</p>
-        </div>
-        <div class="filter-bar">
-          <button class="filter-tag active" data-gallery="all">All</button>
-          <button class="filter-tag" data-gallery="locked">🔒 Locked</button>
-          <button class="filter-tag" data-gallery="unlocked">🔓 Unlocked</button>
-          <button class="filter-tag" data-gallery="public">🌐 Public</button>
-          <button class="filter-tag" data-gallery="private">👤 Private</button>
-          <button class="filter-tag" data-gallery="recent">🕐 Recent</button>
-        </div>
-        <div id="gallery-grid" class="gallery-grid"></div>
-      </section>
-
-      <!-- PLACES -->
-      <section id="screen-places" class="app-screen">
-        <div class="screen-header">
-          <h2 class="screen-title">🗺 Places</h2>
-          <p class="screen-sub">Every place you've left an echo.</p>
-        </div>
-        <div class="fake-map">
-          <div class="map-pin" style="top:30%;left:38%">📍<span class="pin-label">Pune Café</span></div>
-          <div class="map-pin" style="top:55%;left:62%">📍<span class="pin-label">MG Road</span></div>
-          <div class="map-pin" style="top:42%;left:22%">📍<span class="pin-label">Campus</span></div>
-          <div class="map-pin" style="top:68%;left:45%">📍<span class="pin-label">Skybar</span></div>
-        </div>
-        <div id="places-list" class="card-list"></div>
-      </section>
-
-      <!-- FEEDBACK -->
-      <section id="screen-feedback" class="app-screen">
-        <div class="screen-header">
-          <h2 class="screen-title">💬 Share Your Feedback</h2>
-          <p class="screen-sub">Help shape Echoes. Your thoughts matter most at this stage.</p>
-        </div>
-        <div class="form-card feedback-hero">
-          <div class="feedback-intro">
-            <span>✦</span>
-            <p>This is an MVP concept demo for validating interest. No fluff — just your honest thoughts. Every response is read by the builder.</p>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Your Name <em>(optional)</em></label>
-            <input type="text" id="fb-name" class="form-input" placeholder="Leave blank to stay anonymous" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Email <em>(optional, for updates)</em></label>
-            <input type="email" id="fb-email" class="form-input" placeholder="hello@example.com" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Rate the concept</label>
-            <div class="star-row" id="star-row">
-              <span class="star" data-v="1">★</span>
-              <span class="star" data-v="2">★</span>
-              <span class="star" data-v="3">★</span>
-              <span class="star" data-v="4">★</span>
-              <span class="star" data-v="5">★</span>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">What excites you most?</label>
-            <div class="check-group" id="excites-group">
-              <label class="check-item"><input type="checkbox" value="unlock" /> Unlocking memories at a real place</label>
-              <label class="check-item"><input type="checkbox" value="messages" /> Leaving hidden messages for people</label>
-              <label class="check-item"><input type="checkbox" value="discovery" /> Discovering public drops nearby</label>
-              <label class="check-item"><input type="checkbox" value="social" /> Social interaction layer</label>
-              <label class="check-item"><input type="checkbox" value="nostalgia" /> The nostalgia and emotional angle</label>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Would you use this app?</label>
-            <div class="toggle-row" id="would-use-row">
-              <button class="toggle-btn" data-use="definitely">Definitely ✓</button>
-              <button class="toggle-btn" data-use="maybe">Maybe</button>
-              <button class="toggle-btn" data-use="no">Probably not</button>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">What feature would make you install it right now?</label>
-            <textarea id="fb-killer" class="form-input" rows="3" placeholder="e.g. Real map view, AR unlock, group memories..."></textarea>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Anything else?</label>
-            <textarea id="fb-other" class="form-input" rows="4" placeholder="Bugs, ideas, feelings, suggestions..."></textarea>
-          </div>
-          <button class="btn-primary btn-full" id="btn-submit-feedback">Submit Feedback ✦</button>
-          <p class="feedback-note">Responses are saved locally in your browser for this demo session.</p>
-        </div>
-        <div id="feedback-responses-section" class="hidden">
-          <h3 class="section-title">✦ Previous Responses</h3>
-          <div id="feedback-list" class="card-list"></div>
-        </div>
-      </section>
-
-    </main>
+      </div>
+    </div>
+    <ul class="nav-ul">
+      <li class="nav-group-label">Discover</li>
+      <li><a class="nl active" data-s="dashboard" onclick="goSec('dashboard',this)"><i class="ni">⌂</i>Home</a></li>
+      <li><a class="nl" data-s="nearby" onclick="goSec('nearby',this)"><i class="ni">◉</i>Nearby<span class="nl-new">New</span></a></li>
+      <li><a class="nl" data-s="gallery" onclick="goSec('gallery',this)"><i class="ni">▦</i>Gallery</a></li>
+      <li class="nav-group-label">Create</li>
+      <li><a class="nl" data-s="add-memory" onclick="goSec('add-memory',this)"><i class="ni">＋</i>Add Memory</a></li>
+      <li><a class="nl" data-s="leave-msg" onclick="goSec('leave-msg',this)"><i class="ni">✉</i>Leave Message</a></li>
+      <li class="nav-group-label">You</li>
+      <li><a class="nl" data-s="inbox" onclick="goSec('inbox',this)"><i class="ni">🔔</i>Tagged For Me<span class="nbadge hidden" id="nbadge">0</span></a></li>
+      <li><a class="nl" data-s="unlock" onclick="goSec('unlock',this)"><i class="ni">🔓</i>Unlock Nearby</a></li>
+      <li><a class="nl" data-s="places" onclick="goSec('places',this)"><i class="ni">⌖</i>My Places</a></li>
+      <li class="nav-sep"></li>
+      <li><a class="nl nl-fb" data-s="feedback" onclick="goSec('feedback',this)"><i class="ni">💬</i>Feedback</a></li>
+    </ul>
+    <div class="sb-bottom">
+      <div class="sb-version">Echoes · MVP v1.0</div>
+      <button class="btn-logout" onclick="logout()">← Sign Out</button>
+    </div>
+  </nav>
+  <div class="mobile-topbar">
+    <div class="mobile-logo-wrap">
+      <span class="mobile-logo-mark">◎</span>
+      <span class="mobile-logo-text">Echoes</span>
+    </div>
+    <button class="hamburger" onclick="toggleSB()"><span></span><span></span><span></span></button>
   </div>
+  <div class="sb-overlay hidden" id="sb-overlay" onclick="toggleSB()"></div>
+  <main id="main-content">
+    <section id="s-dashboard" class="s active">
+      <div class="dash-hero">
+        <div class="dash-hero-left">
+          <p class="eyebrow">Welcome back</p>
+          <h2 class="sh">Hey <span id="d-name">Explorer</span> <span id="d-av">🌙</span></h2>
+          <p class="sp">Your memories are anchored in the places you've loved.</p>
+        </div>
+        <span class="mvp-pill">MVP Beta</span>
+      </div>
+      <div class="stats-row">
+        <div class="sc"><span class="si">🧠</span><span class="sn" id="st-saved">0</span><span class="sl">Memories</span></div>
+        <div class="sc"><span class="si">📍</span><span class="sn" id="st-places">0</span><span class="sl">Places</span></div>
+        <div class="sc"><span class="si">🔓</span><span class="sn" id="st-unlocked">0</span><span class="sl">Unlocked</span></div>
+        <div class="sc"><span class="si">🌐</span><span class="sn" id="st-nearby">0</span><span class="sl">Nearby</span></div>
+        <div class="sc"><span class="si">✨</span><span class="sn" id="st-reactions">0</span><span class="sl">Reactions</span></div>
+      </div>
+      <p class="sub-head">Quick Actions</p>
+      <div class="act-grid">
+        <button class="ac" onclick="goSec('add-memory')"><span class="ai">📷</span><span class="at">Add Memory</span><span class="ad">Anchor a photo to this exact place</span><span class="arr">→</span></button>
+        <button class="ac" onclick="goSec('leave-msg')"><span class="ai">💌</span><span class="at">Leave Message</span><span class="ad">Hide a note for someone you love</span><span class="arr">→</span></button>
+        <button class="ac ac-core" onclick="goSec('unlock')"><span class="core-glow"></span><span class="ai">🔓</span><span class="at">Unlock Nearby <span class="core-badge">Core</span></span><span class="ad">Return to a place to reveal its memory</span><span class="arr">→</span></button>
+        <button class="ac" onclick="goSec('gallery')"><span class="ai">▦</span><span class="at">View Gallery</span><span class="ad">Every moment you've locked</span><span class="arr">→</span></button>
+        <button class="ac" onclick="goSec('nearby')"><span class="ai">🌍</span><span class="at">Explore Nearby</span><span class="ad">Discover what others left around you</span><span class="arr">→</span></button>
+      </div>
+      <p class="sub-head">Nearby Activity</p>
+      <div class="teaser-wrap" id="teaser-wrap"></div>
+    </section>
+    <section id="s-add-memory" class="s">
+      <div class="sh-block"><h2 class="sh">Add Memory</h2><p class="sp">Anchor a moment to a real place. It waits until you return.</p></div>
+      <div class="card">
+        <div class="upload-z" id="upload-z" onclick="document.getElementById('img-pick').click()">
+          <input type="file" id="img-pick" accept="image/*" class="hidden" onchange="onImg(event)"/>
+          <div id="up-ph" class="up-ph"><div class="up-ico">📷</div><p>Tap to add a photo</p><small>JPG · PNG · WEBP · up to 5MB</small></div>
+          <img id="img-prev" class="img-prev hidden"/>
+        </div>
+        <div id="filt-strip" class="filt-strip hidden">
+          <p class="fl">Filter</p>
+          <div class="filt-btns">
+            <button class="fb active" data-f="original" onclick="applyFilt('original',this)">Original</button>
+            <button class="fb" data-f="vintage" onclick="applyFilt('vintage',this)">Vintage</button>
+            <button class="fb" data-f="warm" onclick="applyFilt('warm',this)">Warm</button>
+            <button class="fb" data-f="bw" onclick="applyFilt('bw',this)">B&amp;W</button>
+            <button class="fb" data-f="cinematic" onclick="applyFilt('cinematic',this)">Cinematic</button>
+          </div>
+        </div>
+        <div class="form-stack">
+          <div class="fg"><label class="fl">Caption</label><textarea id="m-cap" rows="3" placeholder="What happened here? How did it feel?"></textarea></div>
+          <div class="frow">
+            <div class="fg"><label class="fl">Interest tag</label><select id="m-tag"><option value="nostalgia">🕰️ Nostalgia</option><option value="food">🍜 Food</option><option value="travel">✈️ Travel</option><option value="photography">📸 Photography</option><option value="friendship">👥 Friendship</option><option value="hidden">📝 Hidden</option></select></div>
+            <div class="fg"><label class="fl">Visibility</label><select id="m-vis"><option value="private">🔒 Private</option><option value="public">🌐 Public</option></select></div>
+          </div>
+          <div class="loc-bar"><span class="loc-ico">📍</span><div class="loc-info"><span class="fl">Location</span><span class="lv" id="m-loc">Tap Fetch to use GPS</span></div><button class="btn-loc" onclick="fetchMemLoc()">Fetch GPS</button></div>
+          <button class="btn-primary bfull" onclick="saveMemory()">Lock This Memory 🔒</button>
+        </div>
+      </div>
+    </section>
+    <section id="s-leave-msg" class="s">
+      <div class="sh-block"><h2 class="sh">Leave a Message</h2><p class="sp">Drop a hidden note at any place. They must visit to read it.</p></div>
+      <div class="card">
+        <div class="msg-tabs">
+          <button class="mt active" data-t="tagged" onclick="pickMT('tagged',this)">💌 For Someone</button>
+          <button class="mt" data-t="public" onclick="pickMT('public',this)">🌐 Public Drop</button>
+          <button class="mt" data-t="interest" onclick="pickMT('interest',this)">✨ Interest Drop</button>
+        </div>
+        <div class="form-stack">
+          <div class="fg"><label class="fl">Message</label><textarea id="mg-txt" rows="3" placeholder="Write something meaningful… or mysterious."></textarea></div>
+          <div class="fg" id="tag-field"><label class="fl">Tagged person (@username)</label><input type="text" id="mg-tagged" placeholder="@username"/></div>
+          <div class="frow">
+            <div class="fg"><label class="fl">Category</label><select id="mg-cat"><option value="nostalgia">🕰️ Nostalgia</option><option value="food">🍜 Food</option><option value="travel">✈️ Travel</option><option value="photography">📸 Photography</option><option value="friendship">👥 Friendship</option><option value="hidden">📝 Hidden</option></select></div>
+            <div class="fg"><label class="fl">Unlock radius</label><select id="mg-rad"><option value="50">50m — very close</option><option value="100" selected>100m — nearby</option><option value="250">250m — same area</option><option value="500">500m — neighbourhood</option></select></div>
+          </div>
+          <div class="upload-z small" onclick="document.getElementById('mg-img').click()">
+            <input type="file" id="mg-img" accept="image/*" class="hidden" onchange="onMsgImg(event)"/>
+            <div id="mg-img-ph" class="up-ph"><span>📎 Optional photo attachment</span></div>
+            <img id="mg-img-prev" class="img-prev hidden" style="max-height:90px"/>
+          </div>
+          <div class="loc-bar"><span class="loc-ico">📍</span><div class="loc-info"><span class="fl">Drop Location</span><span class="lv" id="mg-loc">Tap Fetch to use GPS</span></div><button class="btn-loc" onclick="fetchMsgLoc()">Fetch GPS</button></div>
+          <button class="btn-primary bfull" onclick="saveMessage()">Drop This Message ✉</button>
+        </div>
+      </div>
+    </section>
+    <section id="s-inbox" class="s">
+      <div class="sh-block"><h2 class="sh">Tagged For Me</h2><p class="sp">Someone left something for you. Visit the place to reveal it.</p></div>
+      <div id="inbox-list"></div>
+    </section>
+    <section id="s-unlock" class="s">
+      <div class="sh-block"><h2 class="sh">Unlock Nearby</h2><p class="sp">Within 100m of where you saved it, the memory unlocks forever.</p></div>
+      <div class="card info-card">
+        <div class="info-ico">🔓</div>
+        <p>We compare your GPS to every locked memory.<br>Within <strong>100 metres</strong> = unlocked forever.</p>
+        <button class="btn-primary" onclick="doUnlock()">Check Location &amp; Unlock</button>
+      </div>
+      <div id="unlock-list"></div>
+    </section>
+    <section id="s-nearby" class="s">
+      <div class="sh-block"><h2 class="sh">Nearby Discoveries</h2><p class="sp">Public drops from others around you.</p></div>
+      <div class="filter-bar">
+        <button class="ftag active" data-tg="all" onclick="filterNearby('all',this)">All</button>
+        <button class="ftag" data-tg="food" onclick="filterNearby('food',this)">🍜 Food</button>
+        <button class="ftag" data-tg="travel" onclick="filterNearby('travel',this)">✈️ Travel</button>
+        <button class="ftag" data-tg="photography" onclick="filterNearby('photography',this)">📸 Photo</button>
+        <button class="ftag" data-tg="nostalgia" onclick="filterNearby('nostalgia',this)">🕰️ Nostalgia</button>
+        <button class="ftag" data-tg="friendship" onclick="filterNearby('friendship',this)">👥 Friends</button>
+      </div>
+      <div class="nearby-grid" id="nearby-grid"></div>
+    </section>
+    <section id="s-gallery" class="s">
+      <div class="sh-block"><h2 class="sh">Memory Gallery</h2><p class="sp">Every moment you've anchored to a place.</p></div>
+      <div class="filter-bar">
+        <button class="ftag active" data-gf="all" onclick="filterGal('all',this)">All</button>
+        <button class="ftag" data-gf="locked" onclick="filterGal('locked',this)">🔒 Locked</button>
+        <button class="ftag" data-gf="unlocked" onclick="filterGal('unlocked',this)">🔓 Unlocked</button>
+        <button class="ftag" data-gf="public" onclick="filterGal('public',this)">🌐 Public</button>
+        <button class="ftag" data-gf="private" onclick="filterGal('private',this)">Private</button>
+        <button class="ftag" data-gf="recent" onclick="filterGal('recent',this)">Recent</button>
+      </div>
+      <div class="gal-grid" id="gal-grid"></div>
+    </section>
+    <section id="s-places" class="s">
+      <div class="sh-block"><h2 class="sh">My Places</h2><p class="sp">Every location that holds an echo of you.</p></div>
+      <div class="mini-map"><div class="map-grid-lines"></div><div class="map-center-lbl">Memory Map · Based on your GPS drops</div><div id="map-pins"></div></div>
+      <div id="places-list"></div>
+    </section>
+    <section id="s-feedback" class="s">
+      <div class="sh-block"><h2 class="sh">Share Your Thoughts</h2><p class="sp">Echoes is early-stage. Every response shapes what it becomes.</p></div>
+      <div class="card" id="fb-form-card">
+        <div class="fb-intro"><div class="fb-pills"><span class="pill gold-pill">MVP Concept</span><span class="pill dim-pill">Early Stage</span></div><p>We're validating this idea. Tell us what resonates, what's missing, whether you'd use this.</p></div>
+        <div class="form-stack">
+          <div class="fg"><label class="fl">Your name / handle (optional)</label><input type="text" id="fb-name" placeholder="@yourname or stay anonymous"/></div>
+          <div class="fg"><label class="fl">How excited are you?</label><div class="r-row"><button class="rb" data-v="1" onclick="setRat(1)">😐</button><button class="rb" data-v="2" onclick="setRat(2)">🙂</button><button class="rb" data-v="3" onclick="setRat(3)">😊</button><button class="rb" data-v="4" onclick="setRat(4)">🤩</button><button class="rb" data-v="5" onclick="setRat(5)">🔥</button></div></div>
+          <div class="fg"><label class="fl">What excites you most?</label><div class="chk-list"><label class="ck"><input type="checkbox" value="unlock"/> Location-based unlocking</label><label class="ck"><input type="checkbox" value="tagged"/> Tagged messages for friends</label><label class="ck"><input type="checkbox" value="discover"/> Discovering public drops</label><label class="ck"><input type="checkbox" value="social"/> Social reactions &amp; comments</label><label class="ck"><input type="checkbox" value="gallery"/> Memory gallery</label></div></div>
+          <div class="fg"><label class="fl">Would you use this?</label><div class="yn-row"><button class="yn" id="yn-yes" onclick="setYN('yes')">✅ Yes</button><button class="yn" id="yn-maybe" onclick="setYN('maybe')">🤔 Maybe</button><button class="yn" id="yn-no" onclick="setYN('no')">❌ No</button></div></div>
+          <div class="fg"><label class="fl">Your thoughts, ideas, what's missing</label><textarea id="fb-thoughts" rows="4" placeholder="Brutal honesty welcome 🙏"></textarea></div>
+          <div class="fg"><label class="fl">Where did you find Echoes?</label><select id="fb-source"><option value="">Select...</option><option value="twitter">Twitter / X</option><option value="linkedin">LinkedIn</option><option value="instagram">Instagram</option><option value="whatsapp">WhatsApp</option><option value="friend">From a friend</option><option value="other">Other</option></select></div>
+          <button class="btn-primary bfull" onclick="submitFeedback()">Send Feedback ✨</button>
+        </div>
+      </div>
+      <div class="hidden" id="fb-thanks"><div class="thanks-box"><div class="thanks-ico">🙏</div><h3>Thank you!</h3><p>Read by the builder. We'll build Echoes with people like you in mind.</p><button class="btn-ghost" onclick="goSec('dashboard')">Back to Home</button></div></div>
+      <div id="fb-list-wrap"><p class="sub-head" style="margin-top:2rem">What others are saying</p><div id="fb-prev-list"></div></div>
+    </section>
+  </main>
+</div><!-- /app -->
 
-  <script src="script.js"></script>
+<!-- MODALS -->
+<div class="modal-ov hidden" id="modal-unlock">
+  <div class="modal-card">
+    <div class="unlock-anim"><div class="u-ring"></div><div class="u-icon">🔓</div></div>
+    <div class="unlock-badge-txt">Memory Unlocked</div>
+    <img id="um-img" class="modal-img hidden"/>
+    <p class="modal-cap" id="um-cap"></p>
+    <div class="modal-meta" id="um-meta"></div>
+    <button class="btn-primary" onclick="closeModal('modal-unlock')">Beautiful ✨</button>
+  </div>
+</div>
+<div class="modal-ov hidden" id="modal-detail">
+  <div class="modal-card" style="text-align:left">
+    <button class="modal-x" onclick="closeModal('modal-detail')">✕</button>
+    <img id="dm-img" class="modal-img hidden"/>
+    <div id="dm-placeholder" class="dm-placeholder hidden"></div>
+    <p class="modal-cap" id="dm-cap"></p>
+    <div class="modal-meta" id="dm-meta" style="justify-content:flex-start;gap:1rem"></div>
+    <div class="soc-bar">
+      <button class="soc-btn" onclick="likeIt()">❤️ <span id="dm-likes">0</span></button>
+      <button class="soc-btn" onclick="emojiReact('🔥')">🔥</button>
+      <button class="soc-btn" onclick="emojiReact('😢')">😢</button>
+      <button class="soc-btn" id="dm-chat-btn" onclick="openChatFromDetail()">💬 Message</button>
+    </div>
+    <div class="comments-area">
+      <div id="dm-comments"></div>
+      <div class="comment-row">
+        <input type="text" id="comment-inp" placeholder="Leave a comment…"/>
+        <button onclick="postComment()">Send</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="scripts/supabase-config.js"></script>
+<script src="scripts/script.js"></script>
 </body>
 </html>

@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Echoes Admin — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&family=Syne:wght@600;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <style>
+  :root{
+    --bg:#07080c;--bg2:#0e0f15;--bg3:#13151d;
+    --card:rgba(255,255,255,0.04);--cb:rgba(255,255,255,0.08);--cbh:rgba(255,255,255,0.13);
+    --gold:#c8a96e;--gold2:#d4b87c;--green:#4ead8a;--red:#e06b6b;--blue:#6b9be0;--purple:#8b7de0;
+    --text:#e8e6e1;--muted:rgba(232,230,225,0.5);--dim:rgba(232,230,225,0.25);
+    --sb:220px;--tr:0.2s cubic-bezier(.4,0,.2,1);
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+  /* ─ LOGIN ─ */
+  #admin-login{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;}
+  .login-box{background:var(--bg2);border:1px solid var(--cb);border-radius:20px;padding:2.5rem;width:100%;max-width:380px;text-align:center;}
+  .login-logo{font-family:'Syne',sans-serif;font-size:1.4rem;color:var(--gold);margin-bottom:.4rem;}
+  .login-sub{font-size:.83rem;color:var(--muted);margin-bottom:2rem;}
+  .login-box input{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--cb);border-radius:10px;padding:.8rem 1rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;margin-bottom:.85rem;transition:border-color var(--tr);}
+  .login-box input:focus{border-color:var(--gold);}
+  .login-box input::placeholder{color:var(--dim);}
+  .btn-login{width:100%;background:var(--gold);border:none;border-radius:10px;padding:.85rem;color:var(--bg);font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:all var(--tr);}
+  .btn-login:hover{background:var(--gold2);transform:translateY(-1px);}
+  .login-hint{font-size:.75rem;color:var(--dim);margin-top:.9rem;font-family:'DM Mono',monospace;}
+
+  /* ─ APP SHELL ─ */
+  #admin-app{display:flex;height:100vh;overflow:hidden;}
+
+  /* ─ SIDEBAR ─ */
+  .asb{width:var(--sb);min-width:var(--sb);background:var(--bg2);border-right:1px solid var(--cb);display:flex;flex-direction:column;padding:1.25rem .9rem;overflow-y:auto;}
+  .asb-logo{display:flex;align-items:center;gap:.5rem;font-family:'Syne',sans-serif;font-size:1.1rem;color:var(--gold);margin-bottom:1.75rem;padding:.3rem .5rem;}
+  .asb-logo span{font-size:1.3rem;}
+  .asb-section{font-size:.67rem;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);padding:.35rem .7rem;margin-top:1rem;margin-bottom:.25rem;}
+  .anl{display:flex;align-items:center;gap:.65rem;padding:.6rem .75rem;border-radius:8px;color:var(--muted);font-size:.85rem;cursor:pointer;transition:all var(--tr);border:none;background:none;width:100%;text-align:left;}
+  .anl i{font-style:normal;width:16px;text-align:center;font-size:.9rem;}
+  .anl:hover{background:var(--card);color:var(--text);}
+  .anl.active{background:rgba(200,169,110,.1);color:var(--gold);}
+  .anl .badge{margin-left:auto;background:var(--red);color:#fff;font-size:.65rem;font-weight:700;padding:.15em .5em;border-radius:100px;}
+  .asb-bottom{margin-top:auto;padding-top:1rem;border-top:1px solid var(--cb);}
+  .admin-user-row{display:flex;align-items:center;gap:.6rem;padding:.6rem .75rem;}
+  .admin-av{width:32px;height:32px;background:rgba(200,169,110,.15);border:1px solid rgba(200,169,110,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.9rem;}
+  .admin-info-name{font-size:.83rem;font-weight:500;}
+  .admin-info-role{font-size:.7rem;color:var(--muted);}
+  .btn-signout{width:100%;background:none;border:1px solid var(--cb);border-radius:8px;color:var(--muted);padding:.55rem;cursor:pointer;font-size:.78rem;transition:all var(--tr);margin-top:.5rem;}
+  .btn-signout:hover{border-color:var(--red);color:var(--red);}
+
+  /* ─ MAIN ─ */
+  .amain{flex:1;overflow-y:auto;padding:2rem;scrollbar-width:thin;scrollbar-color:var(--cb) transparent;}
+  .amain::-webkit-scrollbar{width:4px;}
+  .amain::-webkit-scrollbar-thumb{background:var(--cb);border-radius:2px;}
+
+  /* ─ SECTIONS ─ */
+  .asec{display:none;max-width:1100px;}
+  .asec.active{display:block;}
+
+  /* TOP BAR */
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:.75rem;}
+  .page-title{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:700;}
+  .page-sub{font-size:.8rem;color:var(--muted);margin-top:.15rem;}
+  .topbar-right{display:flex;align-items:center;gap:.75rem;}
+  .status-dot{width:8px;height:8px;background:var(--green);border-radius:50%;display:inline-block;margin-right:4px;animation:blink 2s ease-in-out infinite;}
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:.4;}}
+  .live-badge{font-size:.75rem;color:var(--green);font-family:'DM Mono',monospace;}
+  .refresh-btn{background:var(--card);border:1px solid var(--cb);border-radius:8px;color:var(--muted);padding:.45rem .9rem;cursor:pointer;font-size:.78rem;font-family:'DM Sans',sans-serif;transition:all var(--tr);}
+  .refresh-btn:hover{border-color:var(--cbh);color:var(--text);}
+
+  /* KPI CARDS */
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:1.75rem;}
+  .kpi{background:var(--card);border:1px solid var(--cb);border-radius:14px;padding:1.25rem 1.1rem;position:relative;overflow:hidden;transition:all var(--tr);}
+  .kpi:hover{border-color:var(--cbh);transform:translateY(-2px);}
+  .kpi-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.5rem;}
+  .kpi-num{font-family:'Syne',sans-serif;font-size:2rem;font-weight:700;line-height:1;}
+  .kpi-change{font-size:.73rem;margin-top:.4rem;font-family:'DM Mono',monospace;}
+  .up{color:var(--green);} .dn{color:var(--red);} .neu{color:var(--muted);}
+  .kpi-accent{position:absolute;bottom:0;left:0;right:0;height:2px;}
+
+  /* CHARTS */
+  .chart-grid{display:grid;grid-template-columns:2fr 1fr;gap:1rem;margin-bottom:1.75rem;}
+  .chart-card{background:var(--card);border:1px solid var(--cb);border-radius:14px;padding:1.25rem;}
+  .chart-title{font-family:'Syne',sans-serif;font-size:.88rem;font-weight:700;margin-bottom:.25rem;}
+  .chart-sub{font-size:.75rem;color:var(--muted);margin-bottom:1.1rem;}
+  .chart-wrap{position:relative;width:100%;}
+
+  /* TABLE */
+  .data-table{width:100%;border-collapse:collapse;font-size:.83rem;}
+  .data-table th{text-align:left;padding:10px 14px;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);border-bottom:1px solid var(--cb);font-weight:500;}
+  .data-table td{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--text);vertical-align:middle;}
+  .data-table tr:hover td{background:rgba(255,255,255,.025);}
+  .data-table tr:last-child td{border-bottom:none;}
+  .td-av{font-size:1.1rem;width:32px;height:32px;background:rgba(255,255,255,.06);border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid var(--cb);}
+  .td-name{font-weight:500;}
+  .td-handle{font-size:.73rem;color:var(--muted);font-family:'DM Mono',monospace;}
+  .status-badge{font-size:.68rem;padding:.2em .65em;border-radius:100px;font-weight:500;}
+  .s-active{background:rgba(78,173,138,.15);color:var(--green);border:1px solid rgba(78,173,138,.3);}
+  .s-new{background:rgba(107,155,224,.15);color:var(--blue);border:1px solid rgba(107,155,224,.3);}
+  .s-flagged{background:rgba(224,107,107,.15);color:var(--red);border:1px solid rgba(224,107,107,.3);}
+  .s-inactive{background:var(--card);color:var(--muted);border:1px solid var(--cb);}
+
+  /* MAP SECTION */
+  .loc-map{background:var(--card);border:1px solid var(--cb);border-radius:14px;overflow:hidden;margin-bottom:1.75rem;}
+  .loc-map-head{padding:1.1rem 1.25rem;border-bottom:1px solid var(--cb);display:flex;align-items:center;justify-content:space-between;}
+  .loc-map-inner{height:280px;position:relative;background:var(--bg3);}
+  .map-bg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);background-size:40px 40px;}
+  .city-dot{position:absolute;cursor:pointer;transition:transform var(--tr);}
+  .city-dot:hover{transform:scale(1.2);}
+  .city-dot .cd-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--gold);background:rgba(200,169,110,.3);position:relative;}
+  .city-dot .cd-dot::after{content:'';position:absolute;inset:-6px;border-radius:50%;border:1px solid rgba(200,169,110,.25);animation:cityRing 2s ease-out infinite;}
+  @keyframes cityRing{0%{transform:scale(.7);opacity:.8;}100%{transform:scale(1.8);opacity:0;}}
+  .city-dot .cd-lbl{font-size:.7rem;color:var(--text);white-space:nowrap;margin-top:3px;font-family:'DM Mono',monospace;}
+  .city-dot .cd-count{font-size:.65rem;color:var(--gold);}
+
+  /* CONTENT MODERATION */
+  .mod-card{background:var(--card);border:1px solid var(--cb);border-radius:12px;padding:1.1rem;margin-bottom:.7rem;display:flex;gap:1rem;align-items:flex-start;transition:all var(--tr);}
+  .mod-card:hover{border-color:var(--cbh);}
+  .mod-card.flagged{border-color:rgba(224,107,107,.3);}
+  .mod-thumb{width:60px;height:60px;border-radius:8px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;border:1px solid var(--cb);}
+  .mod-info{flex:1;}
+  .mod-user{font-size:.82rem;font-weight:500;margin-bottom:.2rem;}
+  .mod-text{font-size:.82rem;color:var(--muted);line-height:1.4;margin-bottom:.5rem;}
+  .mod-meta{display:flex;gap:.75rem;font-size:.7rem;color:var(--dim);font-family:'DM Mono',monospace;flex-wrap:wrap;}
+  .mod-actions{display:flex;gap:.5rem;flex-shrink:0;flex-direction:column;}
+  .btn-approve{background:rgba(78,173,138,.15);border:1px solid rgba(78,173,138,.3);color:var(--green);padding:.35rem .8rem;border-radius:8px;cursor:pointer;font-size:.75rem;font-family:'DM Sans',sans-serif;transition:all var(--tr);}
+  .btn-approve:hover{background:rgba(78,173,138,.25);}
+  .btn-remove{background:rgba(224,107,107,.1);border:1px solid rgba(224,107,107,.25);color:var(--red);padding:.35rem .8rem;border-radius:8px;cursor:pointer;font-size:.75rem;font-family:'DM Sans',sans-serif;transition:all var(--tr);}
+  .btn-remove:hover{background:rgba(224,107,107,.2);}
+
+  /* FEEDBACK ADMIN */
+  .fb-admin-card{background:var(--card);border:1px solid var(--cb);border-radius:12px;padding:1.1rem;margin-bottom:.7rem;display:flex;gap:1rem;align-items:flex-start;}
+  .fb-admin-card .rating-big{font-size:1.5rem;flex-shrink:0;}
+  .fb-admin-name{font-size:.85rem;font-weight:500;margin-bottom:.2rem;}
+  .fb-admin-text{font-size:.82rem;color:var(--muted);line-height:1.5;margin-bottom:.4rem;}
+  .fb-admin-foot{display:flex;gap:.75rem;font-size:.7rem;color:var(--dim);font-family:'DM Mono',monospace;flex-wrap:wrap;}
+  .yn-tag{display:inline-block;font-size:.68rem;padding:.18em .6em;border-radius:100px;}
+  .yn-yes{background:rgba(78,173,138,.12);color:var(--green);border:1px solid rgba(78,173,138,.25);}
+  .yn-maybe{background:rgba(200,169,110,.1);color:var(--gold);border:1px solid rgba(200,169,110,.25);}
+  .yn-no{background:rgba(224,107,107,.1);color:var(--red);border:1px solid rgba(224,107,107,.25);}
+
+  /* SECTION CARDS */
+  .sec-card{background:var(--card);border:1px solid var(--cb);border-radius:14px;overflow:hidden;margin-bottom:1.25rem;}
+  .sec-card-head{padding:1rem 1.25rem;border-bottom:1px solid var(--cb);display:flex;align-items:center;justify-content:space-between;}
+  .sec-card-title{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;}
+  .sec-card-body{padding:0;}
+
+  /* FILTERS */
+  .admin-filter-bar{display:flex;gap:.4rem;flex-wrap:wrap;padding:1rem 1.25rem;border-bottom:1px solid var(--cb);}
+  .aft{padding:.35rem .8rem;border-radius:100px;background:var(--card);border:1px solid var(--cb);color:var(--muted);font-size:.76rem;cursor:pointer;transition:all var(--tr);font-family:'DM Sans',sans-serif;}
+  .aft:hover,.aft.active{background:rgba(200,169,110,.12);border-color:var(--gold);color:var(--gold);}
+
+  /* TOAST */
+  #a-toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);z-index:9999;background:rgba(14,15,21,.96);border:1px solid var(--cbh);border-radius:100px;padding:.65rem 1.5rem;font-size:.83rem;backdrop-filter:blur(20px);pointer-events:none;white-space:nowrap;transition:opacity .3s;}
+  #a-toast.hidden{opacity:0;}
+
+  /* RESPONSIVE */
+  @media(max-width:768px){
+    .asb{display:none;}
+    .chart-grid{grid-template-columns:1fr;}
+    .kpi-grid{grid-template-columns:repeat(2,1fr);}
+  }
+  </style>
+</head>
+<body>
+
+<div id="a-toast" class="hidden"></div>
+
+<!-- LOGIN -->
+<div id="admin-login">
+  <div class="login-box">
+    <div class="login-logo">◎ Echoes Admin</div>
+    <div class="login-sub">Internal dashboard — authorised access only</div>
+    <input type="text" id="login-user" placeholder="Admin username" value="admin"/>
+    <input type="password" id="login-pass" placeholder="Password" value="echoes2024"/>
+    <button class="btn-login" onclick="adminLogin()">Sign In →</button>
+    <div class="login-hint">Demo: admin / echoes2024</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="admin-app" style="display:none">
+
+  <!-- SIDEBAR -->
+  <nav class="asb">
+    <div class="asb-logo"><span>◎</span>Echoes Admin</div>
+    <div class="asb-section">Overview</div>
+    <button class="anl active" data-p="overview" onclick="adminNav('overview',this)"><i>⌂</i>Dashboard</button>
+    <button class="anl" data-p="users" onclick="adminNav('users',this)"><i>👥</i>Users</button>
+    <button class="anl" data-p="locations" onclick="adminNav('locations',this)"><i>📍</i>Location Map</button>
+    <div class="asb-section">Content</div>
+    <button class="anl" data-p="memories" onclick="adminNav('memories',this)"><i>🧠</i>Memories</button>
+    <button class="anl" data-p="moderation" onclick="adminNav('moderation',this)"><i>🛡</i>Moderation<span class="badge">3</span></button>
+    <div class="asb-section">Feedback</div>
+    <button class="anl" data-p="feedback" onclick="adminNav('feedback',this)"><i>💬</i>Feedback</button>
+    <button class="anl" data-p="analytics" onclick="adminNav('analytics',this)"><i>📊</i>Analytics</button>
+    <div class="asb-bottom">
+      <div class="admin-user-row">
+        <div class="admin-av">👤</div>
+        <div><div class="admin-info-name">Admin</div><div class="admin-info-role">Super Admin</div></div>
+      </div>
+      <button class="btn-signout" onclick="adminLogout()">Sign Out</button>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="amain">
+
+    <!-- ── OVERVIEW ── -->
+    <section id="p-overview" class="asec active">
+      <div class="topbar">
+        <div><div class="page-title">Dashboard Overview</div><div class="page-sub">Echoes MVP · All metrics are demo data</div></div>
+        <div class="topbar-right">
+          <span class="live-badge"><span class="status-dot"></span>Live</span>
+          <button class="refresh-btn" onclick="aToast('✅ Refreshed!')">↻ Refresh</button>
+        </div>
+      </div>
+
+      <div style="background:rgba(200,169,110,.07);border:1px solid rgba(200,169,110,.2);border-radius:10px;padding:.6rem 1rem;margin-bottom:1rem;font-size:.78rem;color:rgba(200,169,110,.9);">
+        ⚠️ <strong>Demo mode:</strong> User/memory counts below are illustrative. Feedback Responses and all Feedback section data are real from localStorage.
+      </div>
+      <div class="kpi-grid">
+        <div class="kpi"><div class="kpi-label">Total Users <span style="font-size:.6rem;color:var(--dim)">(demo)</span></div><div class="kpi-num" style="color:var(--blue)">1,247</div><div class="kpi-change up">↑ +143 this week</div><div class="kpi-accent" style="background:var(--blue)"></div></div>
+        <div class="kpi"><div class="kpi-label">Active Today <span style="font-size:.6rem;color:var(--dim)">(demo)</span></div><div class="kpi-num" style="color:var(--green)">89</div><div class="kpi-change up">↑ +12 vs yesterday</div><div class="kpi-accent" style="background:var(--green)"></div></div>
+        <div class="kpi"><div class="kpi-label">Memories Saved <span style="font-size:.6rem;color:var(--dim)">(demo)</span></div><div class="kpi-num" style="color:var(--gold)" id="kpi-mem-count">0</div><div class="kpi-change neu">From localStorage</div><div class="kpi-accent" style="background:var(--gold)"></div></div>
+        <div class="kpi"><div class="kpi-label">Unlocked <span style="font-size:.6rem;color:var(--dim)">(demo)</span></div><div class="kpi-num" style="color:var(--purple)" id="kpi-unlock-count">0</div><div class="kpi-change neu">From localStorage</div><div class="kpi-accent" style="background:var(--purple)"></div></div>
+        <div class="kpi"><div class="kpi-label">Public Drops <span style="font-size:.6rem;color:var(--dim)">(demo)</span></div><div class="kpi-num" style="color:#5eb8a0" id="kpi-drops-count">0</div><div class="kpi-change neu">From localStorage</div><div class="kpi-accent" style="background:#5eb8a0"></div></div>
+        <div class="kpi"><div class="kpi-label">Feedback Responses <span style="font-size:.6rem;color:var(--green)">✓ real</span></div><div class="kpi-num" style="color:var(--gold)"><span id="kpi-fb-count">0</span></div><div class="kpi-change neu">Live from user app</div><div class="kpi-accent" style="background:var(--gold)"></div></div>
+      </div>
+
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="chart-title">User signups — last 7 days</div>
+          <div class="chart-sub">New registrations per day</div>
+          <div class="chart-wrap" style="height:200px"><canvas id="chart-signups"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Memory types</div>
+          <div class="chart-sub">By interest tag</div>
+          <div class="chart-wrap" style="height:200px"><canvas id="chart-types"></canvas></div>
+        </div>
+      </div>
+
+      <div class="chart-grid" style="grid-template-columns:1fr 1fr">
+        <div class="chart-card">
+          <div class="chart-title">Unlock events — last 14 days</div>
+          <div class="chart-sub">How many memories unlocked daily</div>
+          <div class="chart-wrap" style="height:160px"><canvas id="chart-unlocks"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Traffic source</div>
+          <div class="chart-sub">Where users found Echoes</div>
+          <div class="chart-wrap" style="height:160px"><canvas id="chart-sources"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── USERS ── -->
+    <section id="p-users" class="asec">
+      <div class="topbar"><div><div class="page-title">User Management</div><div class="page-sub">Demo data — connect to real DB for production</div></div></div>
+      <div class="sec-card">
+        <div class="admin-filter-bar">
+          <button class="aft active" onclick="this.parentElement.querySelectorAll('.aft').forEach(b=>b.classList.remove('active'));this.classList.add('active')">All</button>
+          <button class="aft" onclick="this.parentElement.querySelectorAll('.aft').forEach(b=>b.classList.remove('active'));this.classList.add('active')">Active</button>
+          <button class="aft" onclick="this.parentElement.querySelectorAll('.aft').forEach(b=>b.classList.remove('active'));this.classList.add('active')">New (7d)</button>
+          <button class="aft" onclick="this.parentElement.querySelectorAll('.aft').forEach(b=>b.classList.remove('active'));this.classList.add('active')">Flagged</button>
+        </div>
+        <div class="sec-card-body"><table class="data-table" id="users-table"></table></div>
+      </div>
+    </section>
+
+    <!-- ── LOCATION MAP ── -->
+    <section id="p-locations" class="asec">
+      <div class="topbar"><div><div class="page-title">Location Map</div><div class="page-sub">User activity and memory drop density by city</div></div></div>
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+        <div class="kpi"><div class="kpi-label">Cities Active</div><div class="kpi-num" style="color:var(--gold)">7</div><div class="kpi-change neu">India regions</div></div>
+        <div class="kpi"><div class="kpi-label">Top City</div><div class="kpi-num" style="color:var(--green);font-size:1.3rem">Pune</div><div class="kpi-change up">↑ 423 users</div></div>
+        <div class="kpi"><div class="kpi-label">Drops Density</div><div class="kpi-num" style="color:var(--blue)">3.9</div><div class="kpi-change neu">drops/km² avg</div></div>
+        <div class="kpi"><div class="kpi-label">GPS Accuracy</div><div class="kpi-num" style="color:var(--purple)">94%</div><div class="kpi-change up">↑ within 50m</div></div>
+      </div>
+      <div class="loc-map">
+        <div class="loc-map-head"><span class="sec-card-title">India Activity Map</span><span style="font-size:.75rem;color:var(--muted)">Dot size = user count · Demo data</span></div>
+        <div class="loc-map-inner" id="loc-map-inner">
+          <div class="map-bg-grid"></div>
+          <!-- City dots injected by JS -->
+        </div>
+      </div>
+      <div class="sec-card">
+        <div class="sec-card-head"><span class="sec-card-title">Top Locations by Activity</span></div>
+        <div class="sec-card-body"><table class="data-table" id="loc-table"></table></div>
+      </div>
+    </section>
+
+    <!-- ── MEMORIES ── -->
+    <section id="p-memories" class="asec">
+      <div class="topbar"><div><div class="page-title">All Memories</div><div class="page-sub" id="mem-table-sub">Loading…</div></div></div>
+      <div class="sec-card">
+        <div class="admin-filter-bar">
+          <button class="aft active" onclick="this.parentElement.querySelectorAll('.aft').forEach(b=>b.classList.remove('active'));this.classList.add('active')">All</button>
+          <button class="aft" onclick="this.parentElement.querySelectorAll('.aft').forEach(b=>b.classList.remove('active'));this.classList.add('active')">Locked</button>
+          <button class="aft" onclick="this.parentElement.querySelectorAll('.aft').forEach(b=>b.classList.remove('active'));this.classList.add('active')">Unlocked</button>
+          <button class="aft" onclick="this.parentElement.querySelectorAll('.aft').forEach(b=>b.classList.remove('active'));this.classList.add('active')">Public</button>
+          <button class="aft" onclick="this.parentElement.querySelectorAll('.aft').forEach(b=>b.classList.remove('active'));this.classList.add('active')">Private</button>
+        </div>
+        <div class="sec-card-body"><table class="data-table" id="mem-table"></table></div>
+      </div>
+    </section>
+
+    <!-- ── MODERATION ── -->
+    <section id="p-moderation" class="asec">
+      <div class="topbar"><div><div class="page-title">Content Moderation</div><div class="page-sub">3 items need review</div></div></div>
+      <div id="mod-list"></div>
+    </section>
+
+    <!-- ── FEEDBACK ── -->
+    <section id="p-feedback" class="asec">
+      <div class="topbar"><div><div class="page-title">User Feedback</div><div class="page-sub" id="fb-admin-sub">Loading…</div></div></div>
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)" id="fb-kpi-row"></div>
+      <div class="chart-card" style="margin-bottom:1.25rem">
+        <div class="chart-title">Rating distribution</div>
+        <div class="chart-sub">From feedback form responses</div>
+        <div class="chart-wrap" style="height:160px"><canvas id="chart-ratings"></canvas></div>
+      </div>
+      <div id="fb-admin-list"></div>
+    </section>
+
+    <!-- ── ANALYTICS ── -->
+    <section id="p-analytics" class="asec">
+      <div class="topbar"><div><div class="page-title">Analytics</div><div class="page-sub">Growth and engagement metrics</div></div></div>
+      <div class="kpi-grid">
+        <div class="kpi"><div class="kpi-label">DAU / MAU ratio</div><div class="kpi-num" style="color:var(--green)">7.1%</div><div class="kpi-change up">↑ healthy engagement</div></div>
+        <div class="kpi"><div class="kpi-label">Avg session</div><div class="kpi-num" style="color:var(--blue)">4.2m</div><div class="kpi-change up">↑ +0.8m this week</div></div>
+        <div class="kpi"><div class="kpi-label">Retention D7</div><div class="kpi-num" style="color:var(--gold)">34%</div><div class="kpi-change up">↑ above avg for social</div></div>
+        <div class="kpi"><div class="kpi-label">Unlock rate</div><div class="kpi-num" style="color:var(--purple)">22.8%</div><div class="kpi-change neu">of all memories</div></div>
+      </div>
+      <div class="chart-grid" style="grid-template-columns:1fr">
+        <div class="chart-card">
+          <div class="chart-title">28-day user growth</div>
+          <div class="chart-sub">Cumulative registered users</div>
+          <div class="chart-wrap" style="height:200px"><canvas id="chart-growth"></canvas></div>
+        </div>
+      </div>
+      <div class="chart-grid" style="grid-template-columns:1fr 1fr">
+        <div class="chart-card">
+          <div class="chart-title">Feature usage</div>
+          <div class="chart-sub">Which features are used most</div>
+          <div class="chart-wrap" style="height:180px"><canvas id="chart-features"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Platform breakdown</div>
+          <div class="chart-sub">Android vs iOS vs Web</div>
+          <div class="chart-wrap" style="height:180px"><canvas id="chart-platform"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+/* ─── ADMIN AUTH ─── */
+function adminLogin() {
+  const u=document.getElementById('login-user').value.trim();
+  const p=document.getElementById('login-pass').value.trim();
+  if(u==='admin'&&p==='echoes2024'){
+    document.getElementById('admin-login').style.display='none';
+    document.getElementById('admin-app').style.display='flex';
+    initAdmin();
+  } else { aToast('❌ Invalid credentials'); }
+}
+function adminLogout(){
+  document.getElementById('admin-app').style.display='none';
+  document.getElementById('admin-login').style.display='flex';
+}
+
+/* ─── NAV ─── */
+function adminNav(page,btn){
+  document.querySelectorAll('.asec').forEach(s=>s.classList.remove('active'));
+  const sec=document.getElementById('p-'+page);
+  if(sec) sec.classList.add('active');
+  document.querySelectorAll('.anl').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
+
+/* ─── STORAGE (read from user app localStorage) ─── */
+const getM  = ()=>JSON.parse(localStorage.getItem('e_memories')||'[]');
+const getMsgs=()=>JSON.parse(localStorage.getItem('e_messages')||'[]');
+const getFB  = ()=>JSON.parse(localStorage.getItem('e_feedback')||'[]');
+
+/* ─── INIT ─── */
+function initAdmin(){
+  renderOverviewCharts();
+  renderUsersTable();
+  renderLocMap();
+  renderLocTable();
+  renderMemTable();
+  renderModeration();
+  renderFeedbackAdmin();
+  renderAnalyticsCharts();
+  populateRealKPIs();
+}
+
+function populateRealKPIs() {
+  const mems = getM();
+  const msgs = getMsgs();
+  const fbs = getFB();
+
+  // Real counts from localStorage
+  document.getElementById('kpi-fb-count').textContent = fbs.length;
+  document.getElementById('kpi-mem-count').textContent = mems.length;
+  document.getElementById('kpi-unlock-count').textContent = mems.filter(m=>!m.locked).length;
+  const drops = mems.filter(m=>m.visibility==='public').length + msgs.filter(m=>m.type==='public'||m.type==='interest').length;
+  document.getElementById('kpi-drops-count').textContent = drops;
+}
+
+/* ─── CHARTS ─── */
+const C={color:'rgba(255,255,255,.08)'};
+const tick={color:'rgba(232,230,225,.4)',font:{size:11}};
+
+function renderOverviewCharts(){
+  /* Signups */
+  new Chart(document.getElementById('chart-signups'),{type:'bar',data:{
+    labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+    datasets:[{label:'Signups',data:[18,24,19,31,27,42,38],backgroundColor:'rgba(107,155,224,.6)',borderColor:'#6b9be0',borderWidth:1,borderRadius:4}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:C.color},ticks:tick},y:{grid:{color:C.color},ticks:tick}}}});
+
+  /* Memory types */
+  new Chart(document.getElementById('chart-types'),{type:'doughnut',data:{
+    labels:['Nostalgia','Food','Photography','Travel','Friendship','Hidden'],
+    datasets:[{data:[32,21,18,14,9,6],backgroundColor:['#c8a96e','#6b9be0','#8b7de0','#4ead8a','#e06b6b','#5eb8a0'],borderWidth:0}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
+
+  /* Unlocks */
+  const ul=[4,7,5,9,12,8,14,11,17,15,20,18,24,22];
+  new Chart(document.getElementById('chart-unlocks'),{type:'line',data:{
+    labels:ul.map((_,i)=>i===0?'-14d':i===13?'today':''),
+    datasets:[{label:'Unlocks',data:ul,borderColor:'#c8a96e',backgroundColor:'rgba(200,169,110,.08)',fill:true,tension:.4,pointRadius:2,pointBackgroundColor:'#c8a96e'}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:tick},y:{grid:{color:C.color},ticks:tick}}}});
+
+  /* Sources */
+  const srcFB=getFB();
+  const srcCounts={twitter:0,linkedin:0,instagram:0,whatsapp:0,friend:0,other:0};
+  srcFB.forEach(f=>{if(srcCounts[f.source]!==undefined)srcCounts[f.source]++;else srcCounts.other++;});
+  // Add demo data on top
+  srcCounts.instagram+=38;srcCounts.twitter+=24;srcCounts.whatsapp+=19;srcCounts.friend+=11;srcCounts.linkedin+=8;
+  new Chart(document.getElementById('chart-sources'),{type:'bar',data:{
+    labels:['Instagram','Twitter','WhatsApp','Friend','LinkedIn','Other'],
+    datasets:[{data:Object.values(srcCounts),backgroundColor:['#e06b6b','#6b9be0','#4ead8a','#c8a96e','#8b7de0','#888'],borderRadius:4,borderWidth:0}]
+  },options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:C.color},ticks:tick},y:{grid:{display:false},ticks:tick}}}});
+}
+
+function renderAnalyticsCharts(){
+  /* Growth */
+  const gd=[]; let cum=120;
+  for(let i=0;i<28;i++){cum+=Math.floor(Math.random()*25+5);gd.push(cum);}
+  new Chart(document.getElementById('chart-growth'),{type:'line',data:{
+    labels:gd.map((_,i)=>(i%7===0)?'wk '+(Math.floor(i/7)+1):''),
+    datasets:[{label:'Users',data:gd,borderColor:'#4ead8a',backgroundColor:'rgba(78,173,138,.07)',fill:true,tension:.4,pointRadius:1}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:tick},y:{grid:{color:C.color},ticks:tick}}}});
+
+  /* Feature usage */
+  new Chart(document.getElementById('chart-features'),{type:'bar',data:{
+    labels:['Add Memory','View Gallery','Unlock','Nearby','Messages'],
+    datasets:[{data:[89,74,61,52,38],backgroundColor:'rgba(139,125,224,.6)',borderColor:'#8b7de0',borderWidth:1,borderRadius:4}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:tick},y:{grid:{color:C.color},ticks:tick}}}});
+
+  /* Platform */
+  new Chart(document.getElementById('chart-platform'),{type:'pie',data:{
+    labels:['Android','Web','iOS'],
+    datasets:[{data:[58,28,14],backgroundColor:['#4ead8a','#6b9be0','#c8a96e'],borderWidth:0}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'rgba(232,230,225,.5)',font:{size:11}}}}}});
+}
+
+function renderFeedbackAdmin(){
+  const fbs=getFB();
+  document.getElementById('fb-admin-sub').textContent=fbs.length+' total responses';
+  const avg=fbs.length?Math.round(fbs.reduce((a,f)=>a+(f.rating||3),0)/fbs.length*10)/10:0;
+  const yes=fbs.filter(f=>f.yn==='yes').length;
+  const maybe=fbs.filter(f=>f.yn==='maybe').length;
+  document.getElementById('fb-kpi-row').innerHTML=`
+    <div class="kpi"><div class="kpi-label">Total Responses</div><div class="kpi-num" style="color:var(--blue)">${fbs.length}</div></div>
+    <div class="kpi"><div class="kpi-label">Avg Rating</div><div class="kpi-num" style="color:var(--gold)">${avg||'—'}</div><div class="kpi-change up">/ 5.0</div></div>
+    <div class="kpi"><div class="kpi-label">Would Use</div><div class="kpi-num" style="color:var(--green)">${yes}</div><div class="kpi-change neu">${fbs.length?Math.round(yes/fbs.length*100):0}% yes</div></div>
+    <div class="kpi"><div class="kpi-label">Maybe</div><div class="kpi-num" style="color:var(--gold)">${maybe}</div></div>`;
+
+  /* Ratings chart */
+  const rats=[0,0,0,0,0];
+  fbs.forEach(f=>{ if(f.rating>=1&&f.rating<=5) rats[f.rating-1]++; });
+  new Chart(document.getElementById('chart-ratings'),{type:'bar',data:{
+    labels:['😐 1','🙂 2','😊 3','🤩 4','🔥 5'],
+    datasets:[{data:rats,backgroundColor:['#e06b6b','#e09b6b','#c8a96e','#6b9be0','#4ead8a'],borderRadius:4,borderWidth:0}]
+  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:tick},y:{grid:{color:C.color},ticks:{...tick,stepSize:1}}}}});
+
+  const stars=['😐','🙂','😊','🤩','🔥'];
+  const ynCls={yes:'yn-yes',maybe:'yn-maybe',no:'yn-no',unknown:'yn-maybe'};
+  document.getElementById('fb-admin-list').innerHTML = fbs.length===0
+    ? '<div style="text-align:center;padding:3rem;color:var(--muted)">No feedback yet — share the app!</div>'
+    : fbs.map(f=>`
+      <div class="fb-admin-card">
+        <div class="rating-big">${stars[(f.rating||3)-1]}</div>
+        <div style="flex:1">
+          <div class="fb-admin-name">${f.name||'Anonymous'}</div>
+          <div class="fb-admin-text">${f.text}</div>
+          <div class="fb-admin-foot">
+            <span class="yn-tag ${ynCls[f.yn]||'yn-maybe'}">${f.yn==='yes'?'✅ Would use':f.yn==='maybe'?'🤔 Maybe':'❌ Not really'}</span>
+            <span>via ${f.source||'unknown'}</span>
+            ${f.features&&f.features.length?`<span>Likes: ${f.features.join(', ')}</span>`:''}
+          </div>
+        </div>
+      </div>`).join('');
+}
+
+/* ─── USERS TABLE ─── */
+const DEMO_USERS=[
+  {av:'✈️',name:'Priya Mehta',handle:'priya_m',city:'Pune',memories:12,joined:'2 days ago',status:'new'},
+  {av:'🔥',name:'Rohan Kapoor',handle:'rohan_k',city:'Mumbai',memories:8,joined:'5 days ago',status:'active'},
+  {av:'🌿',name:'Ananya Singh',handle:'ananya_s',city:'Bangalore',memories:23,joined:'1 week ago',status:'active'},
+  {av:'🌊',name:'Arjun Patel',handle:'arjun_p',city:'Pune',memories:4,joined:'3 days ago',status:'new'},
+  {av:'📸',name:'Kavya Reddy',handle:'kavya_r',city:'Hyderabad',memories:31,joined:'2 weeks ago',status:'active'},
+  {av:'🎭',name:'Siddharth Nair',handle:'sid_n',city:'Chennai',memories:7,joined:'4 days ago',status:'new'},
+  {av:'🌙',name:'DemoUser',handle:'demouser',city:'Pune',memories:2,joined:'Just now',status:'new'},
+  {av:'⚡',name:'Flagged User',handle:'spam_acc',city:'Unknown',memories:0,joined:'1 day ago',status:'flagged'},
+];
+
+function renderUsersTable(){
+  document.getElementById('users-table').innerHTML=`
+    <thead><tr><th>User</th><th>City</th><th>Memories</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>${DEMO_USERS.map(u=>`
+      <tr>
+        <td><div style="display:flex;align-items:center;gap:.65rem"><div class="td-av">${u.av}</div><div><div class="td-name">${u.name}</div><div class="td-handle">@${u.handle}</div></div></div></td>
+        <td style="color:var(--muted)">${u.city}</td>
+        <td>${u.memories}</td>
+        <td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:.78rem">${u.joined}</td>
+        <td><span class="status-badge s-${u.status}">${u.status}</span></td>
+        <td><button onclick="aToast('✅ Action taken for @${u.handle}')" style="background:none;border:1px solid var(--cb);border-radius:6px;color:var(--muted);padding:.28rem .65rem;cursor:pointer;font-size:.73rem;font-family:'DM Sans',sans-serif;transition:all .2s">⋯</button></td>
+      </tr>`).join('')}
+    </tbody>`;
+}
+
+/* ─── LOCATION MAP ─── */
+const CITIES=[
+  {name:'Pune',users:423,drops:89,top:52,left:30},
+  {name:'Mumbai',users:312,drops:64,top:42,left:22},
+  {name:'Bangalore',users:187,drops:41,top:65,left:38},
+  {name:'Delhi',users:143,drops:29,top:22,left:40},
+  {name:'Hyderabad',users:98,drops:21,top:58,left:42},
+  {name:'Chennai',users:54,drops:12,top:70,left:44},
+  {name:'Kolkata',users:30,drops:7,top:35,left:62},
+];
+
+function renderLocMap(){
+  const map=document.getElementById('loc-map-inner');
+  CITIES.forEach(c=>{
+    const d=document.createElement('div'); d.className='city-dot';
+    d.style.top=c.top+'%'; d.style.left=c.left+'%';
+    d.innerHTML=`<div class="cd-dot"></div><div class="cd-lbl">${c.name}</div><div class="cd-count">${c.users} users</div>`;
+    d.onclick=()=>aToast(`📍 ${c.name}: ${c.users} users · ${c.drops} drops`);
+    map.appendChild(d);
+  });
+}
+
+function renderLocTable(){
+  document.getElementById('loc-table').innerHTML=`
+    <thead><tr><th>City</th><th>Users</th><th>Memory Drops</th><th>Top Tag</th><th>Unlock Rate</th></tr></thead>
+    <tbody>${CITIES.map(c=>`
+      <tr>
+        <td style="font-weight:500">${c.name}</td>
+        <td>${c.users}</td>
+        <td>${c.drops}</td>
+        <td style="color:var(--muted)">📸 Photography</td>
+        <td><span style="color:var(--green)">${Math.floor(18+Math.random()*15)}%</span></td>
+      </tr>`).join('')}
+    </tbody>`;
+}
+
+/* ─── MEMORIES TABLE ─── */
+function renderMemTable(){
+  const mems = getM();
+  const sub = document.getElementById('mem-table-sub');
+  if(sub) sub.textContent = mems.length + ' memories in localStorage';
+
+  if(mems.length === 0){
+    document.getElementById('mem-table').innerHTML =
+      '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--muted)">No memories saved yet. Use the user app to add some.</td></tr>';
+    return;
+  }
+
+  const sorted = [...mems].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  document.getElementById('mem-table').innerHTML=`
+    <thead><tr><th>Caption</th><th>Creator</th><th>Tag</th><th>Visibility</th><th>Status</th><th>Date</th></tr></thead>
+    <tbody>${sorted.map(m=>`
+      <tr>
+        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.caption}</td>
+        <td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:.78rem">@${m.creator||'unknown'}</td>
+        <td>${tagE(m.tag)} ${m.tag||'—'}</td>
+        <td><span class="status-badge ${m.visibility==='public'?'s-active':'s-inactive'}">${m.visibility||'private'}</span></td>
+        <td><span class="status-badge ${m.locked?'s-inactive':'s-active'}">${m.locked?'🔒 Locked':'🔓 Unlocked'}</span></td>
+        <td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:.73rem">${fmtD(m.createdAt)}</td>
+      </tr>`).join('')}
+    </tbody>`;
+}
+
+/* ─── MODERATION ─── */
+const MOD_ITEMS=[
+  {id:'mod1',user:'spam_acc',av:'⚡',text:'Buy cheap followers now! Click here to get 10k followers instantly!!!',tag:'hidden',flagReason:'Spam / promotional content',date:'2h ago',flagged:true},
+  {id:'mod2',user:'anon_123',av:'🎭',text:'This location drop has inappropriate language directed at someone.',tag:'friendship',flagReason:'Reported by 2 users',date:'5h ago',flagged:true},
+  {id:'mod3',user:'test_acc',av:'🌙',text:'Test memory with coordinates 18.52, 73.85 — ignore this',tag:'nostalgia',flagReason:'Looks like test content',date:'1d ago',flagged:false},
+];
+
+function renderModeration(){
+  document.getElementById('mod-list').innerHTML=MOD_ITEMS.map(m=>`
+    <div class="mod-card ${m.flagged?'flagged':''}" id="mc-${m.id}">
+      <div class="mod-thumb">${m.av}</div>
+      <div class="mod-info">
+        <div class="mod-user">@${m.user} · ${tagE(m.tag)} ${m.tag}</div>
+        <div class="mod-text">"${m.text}"</div>
+        <div class="mod-meta">
+          <span>🚩 ${m.flagReason}</span>
+          <span>🕐 ${m.date}</span>
+        </div>
+      </div>
+      <div class="mod-actions">
+        <button class="btn-approve" onclick="modAction('${m.id}','approve')">✓ Keep</button>
+        <button class="btn-remove" onclick="modAction('${m.id}','remove')">✕ Remove</button>
+      </div>
+    </div>`).join('');
+}
+
+function modAction(id,action){
+  const el=document.getElementById('mc-'+id);
+  if(el){el.style.opacity='0';el.style.transform='translateX(20px)';el.style.transition='all .3s';setTimeout(()=>el.remove(),300);}
+  aToast(action==='approve'?'✅ Content kept':'🗑 Content removed');
+}
+
+/* ─── TOAST ─── */
+function aToast(msg,dur=2500){
+  const el=document.getElementById('a-toast');
+  el.textContent=msg; el.classList.remove('hidden');
+  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.add('hidden'),dur);
+}
+
+/* ─── HELPERS ─── */
+function tagE(t){const m={nostalgia:'🕰️',food:'🍜',travel:'✈️',photography:'📸',friendship:'👥',hidden:'📝'};return m[t]||'✨';}
+function fmtD(iso){return new Date(iso).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});}
+</script>
+</body>
+</html>
