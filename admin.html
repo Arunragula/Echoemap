@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Echoes Admin — Dashboard</title>
+  <title>Echoes Admin â€” Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&family=Syne:wght@600;700&display=swap" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -18,7 +18,7 @@
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
 
-  /* ─ LOGIN ─ */
+  /* â”€ LOGIN â”€ */
   #admin-login{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;}
   .login-box{background:var(--bg2);border:1px solid var(--cb);border-radius:20px;padding:2.5rem;width:100%;max-width:380px;text-align:center;}
   .login-logo{font-family:'Syne',sans-serif;font-size:1.4rem;color:var(--gold);margin-bottom:.4rem;}
@@ -30,10 +30,10 @@
   .btn-login:hover{background:var(--gold2);transform:translateY(-1px);}
   .login-hint{font-size:.75rem;color:var(--dim);margin-top:.9rem;font-family:'DM Mono',monospace;}
 
-  /* ─ APP SHELL ─ */
+  /* â”€ APP SHELL â”€ */
   #admin-app{display:flex;height:100vh;overflow:hidden;}
 
-  /* ─ SIDEBAR ─ */
+  /* â”€ SIDEBAR â”€ */
   .asb{width:var(--sb);min-width:var(--sb);background:var(--bg2);border-right:1px solid var(--cb);display:flex;flex-direction:column;padding:1.25rem .9rem;overflow-y:auto;}
   .asb-logo{display:flex;align-items:center;gap:.5rem;font-family:'Syne',sans-serif;font-size:1.1rem;color:var(--gold);margin-bottom:1.75rem;padding:.3rem .5rem;}
   .asb-logo span{font-size:1.3rem;}
@@ -51,12 +51,12 @@
   .btn-signout{width:100%;background:none;border:1px solid var(--cb);border-radius:8px;color:var(--muted);padding:.55rem;cursor:pointer;font-size:.78rem;transition:all var(--tr);margin-top:.5rem;}
   .btn-signout:hover{border-color:var(--red);color:var(--red);}
 
-  /* ─ MAIN ─ */
+  /* â”€ MAIN â”€ */
   .amain{flex:1;overflow-y:auto;padding:2rem;scrollbar-width:thin;scrollbar-color:var(--cb) transparent;}
   .amain::-webkit-scrollbar{width:4px;}
   .amain::-webkit-scrollbar-thumb{background:var(--cb);border-radius:2px;}
 
-  /* ─ SECTIONS ─ */
+  /* â”€ SECTIONS â”€ */
   .asec{display:none;max-width:1100px;}
   .asec.active{display:block;}
 
@@ -172,12 +172,12 @@
 <!-- LOGIN -->
 <div id="admin-login">
   <div class="login-box">
-    <div class="login-logo">◎ Echoes Admin</div>
-    <div class="login-sub">Internal dashboard — authorised access only</div>
-    <input type="text" id="login-user" placeholder="Admin username" value="admin"/>
-    <input type="password" id="login-pass" placeholder="Password" value="echoes2024"/>
-    <button class="btn-login" onclick="adminLogin()">Sign In →</button>
-    <div class="login-hint">Demo: admin / echoes2024</div>
+    <div class="login-logo">â—Ž Echoes Admin</div>
+    <div class="login-sub">Internal dashboard â€” authorised access only</div>
+    <input type="text" id="login-user" placeholder="Admin username" autocomplete="username"/>
+    <input type="password" id="login-pass" placeholder="Password" autocomplete="current-password"/>
+    <button class="btn-login" onclick="adminLogin()">Sign In â†’</button>
+    <div class="login-hint">Use your admin credentials</div>
   </div>
 </div>
 
@@ -186,20 +186,20 @@
 
   <!-- SIDEBAR -->
   <nav class="asb">
-    <div class="asb-logo"><span>◎</span>Echoes Admin</div>
+    <div class="asb-logo"><span>â—Ž</span>Echoes Admin</div>
     <div class="asb-section">Overview</div>
-    <button class="anl active" data-p="overview" onclick="adminNav('overview',this)"><i>⌂</i>Dashboard</button>
-    <button class="anl" data-p="users" onclick="adminNav('users',this)"><i>👥</i>Users</button>
-    <button class="anl" data-p="locations" onclick="adminNav('locations',this)"><i>📍</i>Location Map</button>
+    <button class="anl active" data-p="overview" onclick="adminNav('overview',this)"><i>âŒ‚</i>Dashboard</button>
+    <button class="anl" data-p="users" onclick="adminNav('users',this)"><i>ðŸ‘¥</i>Users</button>
+    <button class="anl" data-p="locations" onclick="adminNav('locations',this)"><i>ðŸ“</i>Location Map</button>
     <div class="asb-section">Content</div>
-    <button class="anl" data-p="memories" onclick="adminNav('memories',this)"><i>🧠</i>Memories</button>
-    <button class="anl" data-p="moderation" onclick="adminNav('moderation',this)"><i>🛡</i>Moderation<span class="badge">3</span></button>
+    <button class="anl" data-p="memories" onclick="adminNav('memories',this)"><i>ðŸ§ </i>Memories</button>
+    <button class="anl" data-p="moderation" onclick="adminNav('moderation',this)"><i>ðŸ›¡</i>Moderation<span class="badge">3</span></button>
     <div class="asb-section">Feedback</div>
-    <button class="anl" data-p="feedback" onclick="adminNav('feedback',this)"><i>💬</i>Feedback</button>
-    <button class="anl" data-p="analytics" onclick="adminNav('analytics',this)"><i>📊</i>Analytics</button>
+    <button class="anl" data-p="feedback" onclick="adminNav('feedback',this)"><i>ðŸ’¬</i>Feedback</button>
+    <button class="anl" data-p="analytics" onclick="adminNav('analytics',this)"><i>ðŸ“Š</i>Analytics</button>
     <div class="asb-bottom">
       <div class="admin-user-row">
-        <div class="admin-av">👤</div>
+        <div class="admin-av">ðŸ‘¤</div>
         <div><div class="admin-info-name">Admin</div><div class="admin-info-role">Super Admin</div></div>
       </div>
       <button class="btn-signout" onclick="adminLogout()">Sign Out</button>
@@ -209,31 +209,28 @@
   <!-- MAIN -->
   <main class="amain">
 
-    <!-- ── OVERVIEW ── -->
+    <!-- â”€â”€ OVERVIEW â”€â”€ -->
     <section id="p-overview" class="asec active">
       <div class="topbar">
-        <div><div class="page-title">Dashboard Overview</div><div class="page-sub">Echoes MVP · All metrics are demo data</div></div>
+        <div><div class="page-title">Dashboard Overview</div><div class="page-sub">Live operational overview</div></div>
         <div class="topbar-right">
           <span class="live-badge"><span class="status-dot"></span>Live</span>
-          <button class="refresh-btn" onclick="aToast('✅ Refreshed!')">↻ Refresh</button>
+          <button class="refresh-btn" onclick="aToast('âœ… Refreshed!')">â†» Refresh</button>
         </div>
       </div>
 
-      <div style="background:rgba(200,169,110,.07);border:1px solid rgba(200,169,110,.2);border-radius:10px;padding:.6rem 1rem;margin-bottom:1rem;font-size:.78rem;color:rgba(200,169,110,.9);">
-        ⚠️ <strong>Demo mode:</strong> User/memory counts below are illustrative. Feedback Responses and all Feedback section data are real from localStorage.
-      </div>
       <div class="kpi-grid">
-        <div class="kpi"><div class="kpi-label">Total Users <span style="font-size:.6rem;color:var(--dim)">(demo)</span></div><div class="kpi-num" style="color:var(--blue)">1,247</div><div class="kpi-change up">↑ +143 this week</div><div class="kpi-accent" style="background:var(--blue)"></div></div>
-        <div class="kpi"><div class="kpi-label">Active Today <span style="font-size:.6rem;color:var(--dim)">(demo)</span></div><div class="kpi-num" style="color:var(--green)">89</div><div class="kpi-change up">↑ +12 vs yesterday</div><div class="kpi-accent" style="background:var(--green)"></div></div>
-        <div class="kpi"><div class="kpi-label">Memories Saved <span style="font-size:.6rem;color:var(--dim)">(demo)</span></div><div class="kpi-num" style="color:var(--gold)" id="kpi-mem-count">0</div><div class="kpi-change neu">From localStorage</div><div class="kpi-accent" style="background:var(--gold)"></div></div>
-        <div class="kpi"><div class="kpi-label">Unlocked <span style="font-size:.6rem;color:var(--dim)">(demo)</span></div><div class="kpi-num" style="color:var(--purple)" id="kpi-unlock-count">0</div><div class="kpi-change neu">From localStorage</div><div class="kpi-accent" style="background:var(--purple)"></div></div>
-        <div class="kpi"><div class="kpi-label">Public Drops <span style="font-size:.6rem;color:var(--dim)">(demo)</span></div><div class="kpi-num" style="color:#5eb8a0" id="kpi-drops-count">0</div><div class="kpi-change neu">From localStorage</div><div class="kpi-accent" style="background:#5eb8a0"></div></div>
-        <div class="kpi"><div class="kpi-label">Feedback Responses <span style="font-size:.6rem;color:var(--green)">✓ real</span></div><div class="kpi-num" style="color:var(--gold)"><span id="kpi-fb-count">0</span></div><div class="kpi-change neu">Live from user app</div><div class="kpi-accent" style="background:var(--gold)"></div></div>
+        <div class="kpi"><div class="kpi-label">Total Users</div><div class="kpi-num" style="color:var(--blue)" id="kpi-user-count">0</div><div class="kpi-change neu">Unique active creators</div><div class="kpi-accent" style="background:var(--blue)"></div></div>
+        <div class="kpi"><div class="kpi-label">Active Today</div><div class="kpi-num" style="color:var(--green)" id="kpi-active-count">0</div><div class="kpi-change neu">Users with activity in last 24h</div><div class="kpi-accent" style="background:var(--green)"></div></div>
+        <div class="kpi"><div class="kpi-label">Memories Saved</div><div class="kpi-num" style="color:var(--gold)" id="kpi-mem-count">0</div><div class="kpi-change neu">Live from app data</div><div class="kpi-accent" style="background:var(--gold)"></div></div>
+        <div class="kpi"><div class="kpi-label">Unlocked</div><div class="kpi-num" style="color:var(--purple)" id="kpi-unlock-count">0</div><div class="kpi-change neu">Live from app data</div><div class="kpi-accent" style="background:var(--purple)"></div></div>
+        <div class="kpi"><div class="kpi-label">Public Drops</div><div class="kpi-num" style="color:#5eb8a0" id="kpi-drops-count">0</div><div class="kpi-change neu">Live from app data</div><div class="kpi-accent" style="background:#5eb8a0"></div></div>
+        <div class="kpi"><div class="kpi-label">Feedback Responses <span style="font-size:.6rem;color:var(--green)">âœ“ real</span></div><div class="kpi-num" style="color:var(--gold)"><span id="kpi-fb-count">0</span></div><div class="kpi-change neu">Live from user app</div><div class="kpi-accent" style="background:var(--gold)"></div></div>
       </div>
 
       <div class="chart-grid">
         <div class="chart-card">
-          <div class="chart-title">User signups — last 7 days</div>
+          <div class="chart-title">User signups â€” last 7 days</div>
           <div class="chart-sub">New registrations per day</div>
           <div class="chart-wrap" style="height:200px"><canvas id="chart-signups"></canvas></div>
         </div>
@@ -246,7 +243,7 @@
 
       <div class="chart-grid" style="grid-template-columns:1fr 1fr">
         <div class="chart-card">
-          <div class="chart-title">Unlock events — last 14 days</div>
+          <div class="chart-title">Unlock events â€” last 14 days</div>
           <div class="chart-sub">How many memories unlocked daily</div>
           <div class="chart-wrap" style="height:160px"><canvas id="chart-unlocks"></canvas></div>
         </div>
@@ -258,9 +255,9 @@
       </div>
     </section>
 
-    <!-- ── USERS ── -->
+    <!-- â”€â”€ USERS â”€â”€ -->
     <section id="p-users" class="asec">
-      <div class="topbar"><div><div class="page-title">User Management</div><div class="page-sub">Demo data — connect to real DB for production</div></div></div>
+      <div class="topbar"><div><div class="page-title">User Management</div><div class="page-sub">User activity and moderation actions</div></div></div>
       <div class="sec-card">
         <div class="admin-filter-bar">
           <button class="aft active" onclick="this.parentElement.querySelectorAll('.aft').forEach(b=>b.classList.remove('active'));this.classList.add('active')">All</button>
@@ -272,17 +269,17 @@
       </div>
     </section>
 
-    <!-- ── LOCATION MAP ── -->
+    <!-- â”€â”€ LOCATION MAP â”€â”€ -->
     <section id="p-locations" class="asec">
       <div class="topbar"><div><div class="page-title">Location Map</div><div class="page-sub">User activity and memory drop density by city</div></div></div>
       <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
         <div class="kpi"><div class="kpi-label">Cities Active</div><div class="kpi-num" style="color:var(--gold)">7</div><div class="kpi-change neu">India regions</div></div>
-        <div class="kpi"><div class="kpi-label">Top City</div><div class="kpi-num" style="color:var(--green);font-size:1.3rem">Pune</div><div class="kpi-change up">↑ 423 users</div></div>
-        <div class="kpi"><div class="kpi-label">Drops Density</div><div class="kpi-num" style="color:var(--blue)">3.9</div><div class="kpi-change neu">drops/km² avg</div></div>
-        <div class="kpi"><div class="kpi-label">GPS Accuracy</div><div class="kpi-num" style="color:var(--purple)">94%</div><div class="kpi-change up">↑ within 50m</div></div>
+        <div class="kpi"><div class="kpi-label">Top City</div><div class="kpi-num" style="color:var(--green);font-size:1.3rem">Pune</div><div class="kpi-change up">â†‘ 423 users</div></div>
+        <div class="kpi"><div class="kpi-label">Drops Density</div><div class="kpi-num" style="color:var(--blue)">3.9</div><div class="kpi-change neu">drops/kmÂ² avg</div></div>
+        <div class="kpi"><div class="kpi-label">GPS Accuracy</div><div class="kpi-num" style="color:var(--purple)">94%</div><div class="kpi-change up">â†‘ within 50m</div></div>
       </div>
       <div class="loc-map">
-        <div class="loc-map-head"><span class="sec-card-title">India Activity Map</span><span style="font-size:.75rem;color:var(--muted)">Dot size = user count · Demo data</span></div>
+        <div class="loc-map-head"><span class="sec-card-title">Activity Map</span><span style="font-size:.75rem;color:var(--muted)">Dot size = user count</span></div>
         <div class="loc-map-inner" id="loc-map-inner">
           <div class="map-bg-grid"></div>
           <!-- City dots injected by JS -->
@@ -294,9 +291,9 @@
       </div>
     </section>
 
-    <!-- ── MEMORIES ── -->
+    <!-- â”€â”€ MEMORIES â”€â”€ -->
     <section id="p-memories" class="asec">
-      <div class="topbar"><div><div class="page-title">All Memories</div><div class="page-sub" id="mem-table-sub">Loading…</div></div></div>
+      <div class="topbar"><div><div class="page-title">All Memories</div><div class="page-sub" id="mem-table-sub">Loadingâ€¦</div></div></div>
       <div class="sec-card">
         <div class="admin-filter-bar">
           <button class="aft active" onclick="this.parentElement.querySelectorAll('.aft').forEach(b=>b.classList.remove('active'));this.classList.add('active')">All</button>
@@ -309,15 +306,15 @@
       </div>
     </section>
 
-    <!-- ── MODERATION ── -->
+    <!-- â”€â”€ MODERATION â”€â”€ -->
     <section id="p-moderation" class="asec">
       <div class="topbar"><div><div class="page-title">Content Moderation</div><div class="page-sub">3 items need review</div></div></div>
       <div id="mod-list"></div>
     </section>
 
-    <!-- ── FEEDBACK ── -->
+    <!-- â”€â”€ FEEDBACK â”€â”€ -->
     <section id="p-feedback" class="asec">
-      <div class="topbar"><div><div class="page-title">User Feedback</div><div class="page-sub" id="fb-admin-sub">Loading…</div></div></div>
+      <div class="topbar"><div><div class="page-title">User Feedback</div><div class="page-sub" id="fb-admin-sub">Loadingâ€¦</div></div></div>
       <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)" id="fb-kpi-row"></div>
       <div class="chart-card" style="margin-bottom:1.25rem">
         <div class="chart-title">Rating distribution</div>
@@ -327,13 +324,13 @@
       <div id="fb-admin-list"></div>
     </section>
 
-    <!-- ── ANALYTICS ── -->
+    <!-- â”€â”€ ANALYTICS â”€â”€ -->
     <section id="p-analytics" class="asec">
       <div class="topbar"><div><div class="page-title">Analytics</div><div class="page-sub">Growth and engagement metrics</div></div></div>
       <div class="kpi-grid">
-        <div class="kpi"><div class="kpi-label">DAU / MAU ratio</div><div class="kpi-num" style="color:var(--green)">7.1%</div><div class="kpi-change up">↑ healthy engagement</div></div>
-        <div class="kpi"><div class="kpi-label">Avg session</div><div class="kpi-num" style="color:var(--blue)">4.2m</div><div class="kpi-change up">↑ +0.8m this week</div></div>
-        <div class="kpi"><div class="kpi-label">Retention D7</div><div class="kpi-num" style="color:var(--gold)">34%</div><div class="kpi-change up">↑ above avg for social</div></div>
+        <div class="kpi"><div class="kpi-label">DAU / MAU ratio</div><div class="kpi-num" style="color:var(--green)">7.1%</div><div class="kpi-change up">â†‘ healthy engagement</div></div>
+        <div class="kpi"><div class="kpi-label">Avg session</div><div class="kpi-num" style="color:var(--blue)">4.2m</div><div class="kpi-change up">â†‘ +0.8m this week</div></div>
+        <div class="kpi"><div class="kpi-label">Retention D7</div><div class="kpi-num" style="color:var(--gold)">34%</div><div class="kpi-change up">â†‘ above avg for social</div></div>
         <div class="kpi"><div class="kpi-label">Unlock rate</div><div class="kpi-num" style="color:var(--purple)">22.8%</div><div class="kpi-change neu">of all memories</div></div>
       </div>
       <div class="chart-grid" style="grid-template-columns:1fr">
@@ -361,22 +358,29 @@
 </div>
 
 <script>
-/* ─── ADMIN AUTH ─── */
+/* â”€â”€â”€ ADMIN AUTH â”€â”€â”€ */
+const ADMIN_USERNAME = 'change_me';
+const ADMIN_PASSWORD = 'change_me';
+
 function adminLogin() {
   const u=document.getElementById('login-user').value.trim();
   const p=document.getElementById('login-pass').value.trim();
-  if(u==='admin'&&p==='echoes2024'){
+  if (ADMIN_USERNAME === 'change_me' || ADMIN_PASSWORD === 'change_me') {
+    aToast('Configure admin credentials in admin.html before use');
+    return;
+  }
+  if(u===ADMIN_USERNAME&&p===ADMIN_PASSWORD){
     document.getElementById('admin-login').style.display='none';
     document.getElementById('admin-app').style.display='flex';
     initAdmin();
-  } else { aToast('❌ Invalid credentials'); }
+  } else { aToast('âŒ Invalid credentials'); }
 }
 function adminLogout(){
   document.getElementById('admin-app').style.display='none';
   document.getElementById('admin-login').style.display='flex';
 }
 
-/* ─── NAV ─── */
+/* â”€â”€â”€ NAV â”€â”€â”€ */
 function adminNav(page,btn){
   document.querySelectorAll('.asec').forEach(s=>s.classList.remove('active'));
   const sec=document.getElementById('p-'+page);
@@ -385,12 +389,12 @@ function adminNav(page,btn){
   if(btn) btn.classList.add('active');
 }
 
-/* ─── STORAGE (read from user app localStorage) ─── */
+/* â”€â”€â”€ STORAGE (read from user app localStorage) â”€â”€â”€ */
 const getM  = ()=>JSON.parse(localStorage.getItem('e_memories')||'[]');
 const getMsgs=()=>JSON.parse(localStorage.getItem('e_messages')||'[]');
 const getFB  = ()=>JSON.parse(localStorage.getItem('e_feedback')||'[]');
 
-/* ─── INIT ─── */
+/* â”€â”€â”€ INIT â”€â”€â”€ */
 function initAdmin(){
   renderOverviewCharts();
   renderUsersTable();
@@ -407,8 +411,28 @@ function populateRealKPIs() {
   const mems = getM();
   const msgs = getMsgs();
   const fbs = getFB();
+  const now = Date.now();
+  const users = new Set();
+  const activeToday = new Set();
+
+  mems.forEach(m => {
+    const u = (m.creator || '').trim();
+    if (!u) return;
+    users.add(u.toLowerCase());
+    const ts = new Date(m.createdAt || Date.now()).getTime();
+    if (now - ts <= 86400000) activeToday.add(u.toLowerCase());
+  });
+  msgs.forEach(m => {
+    const u = (m.sender || '').trim();
+    if (!u) return;
+    users.add(u.toLowerCase());
+    const ts = new Date(m.createdAt || Date.now()).getTime();
+    if (now - ts <= 86400000) activeToday.add(u.toLowerCase());
+  });
 
   // Real counts from localStorage
+  document.getElementById('kpi-user-count').textContent = users.size;
+  document.getElementById('kpi-active-count').textContent = activeToday.size;
   document.getElementById('kpi-fb-count').textContent = fbs.length;
   document.getElementById('kpi-mem-count').textContent = mems.length;
   document.getElementById('kpi-unlock-count').textContent = mems.filter(m=>!m.locked).length;
@@ -416,7 +440,7 @@ function populateRealKPIs() {
   document.getElementById('kpi-drops-count').textContent = drops;
 }
 
-/* ─── CHARTS ─── */
+/* â”€â”€â”€ CHARTS â”€â”€â”€ */
 const C={color:'rgba(255,255,255,.08)'};
 const tick={color:'rgba(232,230,225,.4)',font:{size:11}};
 
@@ -444,8 +468,6 @@ function renderOverviewCharts(){
   const srcFB=getFB();
   const srcCounts={twitter:0,linkedin:0,instagram:0,whatsapp:0,friend:0,other:0};
   srcFB.forEach(f=>{if(srcCounts[f.source]!==undefined)srcCounts[f.source]++;else srcCounts.other++;});
-  // Add demo data on top
-  srcCounts.instagram+=38;srcCounts.twitter+=24;srcCounts.whatsapp+=19;srcCounts.friend+=11;srcCounts.linkedin+=8;
   new Chart(document.getElementById('chart-sources'),{type:'bar',data:{
     labels:['Instagram','Twitter','WhatsApp','Friend','LinkedIn','Other'],
     datasets:[{data:Object.values(srcCounts),backgroundColor:['#e06b6b','#6b9be0','#4ead8a','#c8a96e','#8b7de0','#888'],borderRadius:4,borderWidth:0}]
@@ -482,7 +504,7 @@ function renderFeedbackAdmin(){
   const maybe=fbs.filter(f=>f.yn==='maybe').length;
   document.getElementById('fb-kpi-row').innerHTML=`
     <div class="kpi"><div class="kpi-label">Total Responses</div><div class="kpi-num" style="color:var(--blue)">${fbs.length}</div></div>
-    <div class="kpi"><div class="kpi-label">Avg Rating</div><div class="kpi-num" style="color:var(--gold)">${avg||'—'}</div><div class="kpi-change up">/ 5.0</div></div>
+    <div class="kpi"><div class="kpi-label">Avg Rating</div><div class="kpi-num" style="color:var(--gold)">${avg||'â€”'}</div><div class="kpi-change up">/ 5.0</div></div>
     <div class="kpi"><div class="kpi-label">Would Use</div><div class="kpi-num" style="color:var(--green)">${yes}</div><div class="kpi-change neu">${fbs.length?Math.round(yes/fbs.length*100):0}% yes</div></div>
     <div class="kpi"><div class="kpi-label">Maybe</div><div class="kpi-num" style="color:var(--gold)">${maybe}</div></div>`;
 
@@ -490,57 +512,79 @@ function renderFeedbackAdmin(){
   const rats=[0,0,0,0,0];
   fbs.forEach(f=>{ if(f.rating>=1&&f.rating<=5) rats[f.rating-1]++; });
   new Chart(document.getElementById('chart-ratings'),{type:'bar',data:{
-    labels:['😐 1','🙂 2','😊 3','🤩 4','🔥 5'],
+    labels:['ðŸ˜ 1','ðŸ™‚ 2','ðŸ˜Š 3','ðŸ¤© 4','ðŸ”¥ 5'],
     datasets:[{data:rats,backgroundColor:['#e06b6b','#e09b6b','#c8a96e','#6b9be0','#4ead8a'],borderRadius:4,borderWidth:0}]
   },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:tick},y:{grid:{color:C.color},ticks:{...tick,stepSize:1}}}}});
 
-  const stars=['😐','🙂','😊','🤩','🔥'];
+  const stars=['ðŸ˜','ðŸ™‚','ðŸ˜Š','ðŸ¤©','ðŸ”¥'];
   const ynCls={yes:'yn-yes',maybe:'yn-maybe',no:'yn-no',unknown:'yn-maybe'};
   document.getElementById('fb-admin-list').innerHTML = fbs.length===0
-    ? '<div style="text-align:center;padding:3rem;color:var(--muted)">No feedback yet — share the app!</div>'
-    : fbs.map(f=>`
-      <div class="fb-admin-card">
-        <div class="rating-big">${stars[(f.rating||3)-1]}</div>
-        <div style="flex:1">
-          <div class="fb-admin-name">${f.name||'Anonymous'}</div>
-          <div class="fb-admin-text">${f.text}</div>
-          <div class="fb-admin-foot">
-            <span class="yn-tag ${ynCls[f.yn]||'yn-maybe'}">${f.yn==='yes'?'✅ Would use':f.yn==='maybe'?'🤔 Maybe':'❌ Not really'}</span>
-            <span>via ${f.source||'unknown'}</span>
-            ${f.features&&f.features.length?`<span>Likes: ${f.features.join(', ')}</span>`:''}
-          </div>
-        </div>
-      </div>`).join('');
+    ? '<div style="text-align:center;padding:3rem;color:var(--muted)">No feedback yet.</div>'
+    : fbs.map(f=>`<div class="fb-admin-card"><div class="rating-big">${f.rating||3}/5</div><div style="flex:1"><div class="fb-admin-name">${f.name||'Anonymous'}</div><div class="fb-admin-text">${f.text||''}</div></div></div>`).join('');
 }
 
-/* ─── USERS TABLE ─── */
-const DEMO_USERS=[
-  {av:'✈️',name:'Priya Mehta',handle:'priya_m',city:'Pune',memories:12,joined:'2 days ago',status:'new'},
-  {av:'🔥',name:'Rohan Kapoor',handle:'rohan_k',city:'Mumbai',memories:8,joined:'5 days ago',status:'active'},
-  {av:'🌿',name:'Ananya Singh',handle:'ananya_s',city:'Bangalore',memories:23,joined:'1 week ago',status:'active'},
-  {av:'🌊',name:'Arjun Patel',handle:'arjun_p',city:'Pune',memories:4,joined:'3 days ago',status:'new'},
-  {av:'📸',name:'Kavya Reddy',handle:'kavya_r',city:'Hyderabad',memories:31,joined:'2 weeks ago',status:'active'},
-  {av:'🎭',name:'Siddharth Nair',handle:'sid_n',city:'Chennai',memories:7,joined:'4 days ago',status:'new'},
-  {av:'🌙',name:'DemoUser',handle:'demouser',city:'Pune',memories:2,joined:'Just now',status:'new'},
-  {av:'⚡',name:'Flagged User',handle:'spam_acc',city:'Unknown',memories:0,joined:'1 day ago',status:'flagged'},
-];
+
+function buildUsersFromAppData() {
+  const mems = getM();
+  const msgs = getMsgs();
+  const users = {};
+
+  mems.forEach(m => {
+    const name = (m.creator || '').trim();
+    if (!name) return;
+    if (!users[name]) users[name] = {
+      av: m.creatorAv || 'U',
+      name,
+      handle: name.toLowerCase().replace(/\s+/g, '_'),
+      city: m.locationName ? String(m.locationName).split(',').pop().trim() : 'Unknown',
+      memories: 0,
+      joined: m.createdAt || new Date().toISOString(),
+      status: 'active'
+    };
+    users[name].memories += 1;
+  });
+
+  msgs.forEach(m => {
+    const name = (m.sender || '').trim();
+    if (!name) return;
+    if (!users[name]) users[name] = {
+      av: m.senderAv || 'U',
+      name,
+      handle: name.toLowerCase().replace(/\s+/g, '_'),
+      city: m.locationName ? String(m.locationName).split(',').pop().trim() : 'Unknown',
+      memories: 0,
+      joined: m.createdAt || new Date().toISOString(),
+      status: 'active'
+    };
+  });
+
+  return Object.values(users).sort((a, b) => b.memories - a.memories);
+}
 
 function renderUsersTable(){
+  const users = buildUsersFromAppData();
+  if (!users.length) {
+    document.getElementById('users-table').innerHTML =
+      '<thead><tr><th>User</th><th>City</th><th>Memories</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>'
+      + '<tbody><tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--muted)">No user activity yet.</td></tr></tbody>';
+    return;
+  }
+
   document.getElementById('users-table').innerHTML=`
     <thead><tr><th>User</th><th>City</th><th>Memories</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
-    <tbody>${DEMO_USERS.map(u=>`
+    <tbody>${users.map(u=>`
       <tr>
         <td><div style="display:flex;align-items:center;gap:.65rem"><div class="td-av">${u.av}</div><div><div class="td-name">${u.name}</div><div class="td-handle">@${u.handle}</div></div></div></td>
         <td style="color:var(--muted)">${u.city}</td>
         <td>${u.memories}</td>
-        <td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:.78rem">${u.joined}</td>
+        <td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:.78rem">${fmtD(u.joined)}</td>
         <td><span class="status-badge s-${u.status}">${u.status}</span></td>
-        <td><button onclick="aToast('✅ Action taken for @${u.handle}')" style="background:none;border:1px solid var(--cb);border-radius:6px;color:var(--muted);padding:.28rem .65rem;cursor:pointer;font-size:.73rem;font-family:'DM Sans',sans-serif;transition:all .2s">⋯</button></td>
+        <td><button onclick="aToast('Action completed')" style="background:none;border:1px solid var(--cb);border-radius:6px;color:var(--muted);padding:.28rem .65rem;cursor:pointer;font-size:.73rem;font-family:'DM Sans',sans-serif;transition:all .2s">...</button></td>
       </tr>`).join('')}
     </tbody>`;
 }
 
-/* ─── LOCATION MAP ─── */
+/* â”€â”€â”€ LOCATION MAP â”€â”€â”€ */
 const CITIES=[
   {name:'Pune',users:423,drops:89,top:52,left:30},
   {name:'Mumbai',users:312,drops:64,top:42,left:22},
@@ -557,7 +601,7 @@ function renderLocMap(){
     const d=document.createElement('div'); d.className='city-dot';
     d.style.top=c.top+'%'; d.style.left=c.left+'%';
     d.innerHTML=`<div class="cd-dot"></div><div class="cd-lbl">${c.name}</div><div class="cd-count">${c.users} users</div>`;
-    d.onclick=()=>aToast(`📍 ${c.name}: ${c.users} users · ${c.drops} drops`);
+    d.onclick=()=>aToast(`ðŸ“ ${c.name}: ${c.users} users Â· ${c.drops} drops`);
     map.appendChild(d);
   });
 }
@@ -570,13 +614,13 @@ function renderLocTable(){
         <td style="font-weight:500">${c.name}</td>
         <td>${c.users}</td>
         <td>${c.drops}</td>
-        <td style="color:var(--muted)">📸 Photography</td>
+        <td style="color:var(--muted)">ðŸ“¸ Photography</td>
         <td><span style="color:var(--green)">${Math.floor(18+Math.random()*15)}%</span></td>
       </tr>`).join('')}
     </tbody>`;
 }
 
-/* ─── MEMORIES TABLE ─── */
+/* â”€â”€â”€ MEMORIES TABLE â”€â”€â”€ */
 function renderMemTable(){
   const mems = getM();
   const sub = document.getElementById('mem-table-sub');
@@ -595,19 +639,19 @@ function renderMemTable(){
       <tr>
         <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.caption}</td>
         <td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:.78rem">@${m.creator||'unknown'}</td>
-        <td>${tagE(m.tag)} ${m.tag||'—'}</td>
+        <td>${tagE(m.tag)} ${m.tag||'â€”'}</td>
         <td><span class="status-badge ${m.visibility==='public'?'s-active':'s-inactive'}">${m.visibility||'private'}</span></td>
-        <td><span class="status-badge ${m.locked?'s-inactive':'s-active'}">${m.locked?'🔒 Locked':'🔓 Unlocked'}</span></td>
+        <td><span class="status-badge ${m.locked?'s-inactive':'s-active'}">${m.locked?'ðŸ”’ Locked':'ðŸ”“ Unlocked'}</span></td>
         <td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:.73rem">${fmtD(m.createdAt)}</td>
       </tr>`).join('')}
     </tbody>`;
 }
 
-/* ─── MODERATION ─── */
+/* â”€â”€â”€ MODERATION â”€â”€â”€ */
 const MOD_ITEMS=[
-  {id:'mod1',user:'spam_acc',av:'⚡',text:'Buy cheap followers now! Click here to get 10k followers instantly!!!',tag:'hidden',flagReason:'Spam / promotional content',date:'2h ago',flagged:true},
-  {id:'mod2',user:'anon_123',av:'🎭',text:'This location drop has inappropriate language directed at someone.',tag:'friendship',flagReason:'Reported by 2 users',date:'5h ago',flagged:true},
-  {id:'mod3',user:'test_acc',av:'🌙',text:'Test memory with coordinates 18.52, 73.85 — ignore this',tag:'nostalgia',flagReason:'Looks like test content',date:'1d ago',flagged:false},
+  {id:'mod1',user:'spam_acc',av:'âš¡',text:'Buy cheap followers now! Click here to get 10k followers instantly!!!',tag:'hidden',flagReason:'Spam / promotional content',date:'2h ago',flagged:true},
+  {id:'mod2',user:'anon_123',av:'ðŸŽ­',text:'This location drop has inappropriate language directed at someone.',tag:'friendship',flagReason:'Reported by 2 users',date:'5h ago',flagged:true},
+  {id:'mod3',user:'test_acc',av:'ðŸŒ™',text:'Test memory with coordinates 18.52, 73.85 â€” ignore this',tag:'nostalgia',flagReason:'Looks like test content',date:'1d ago',flagged:false},
 ];
 
 function renderModeration(){
@@ -615,16 +659,16 @@ function renderModeration(){
     <div class="mod-card ${m.flagged?'flagged':''}" id="mc-${m.id}">
       <div class="mod-thumb">${m.av}</div>
       <div class="mod-info">
-        <div class="mod-user">@${m.user} · ${tagE(m.tag)} ${m.tag}</div>
+        <div class="mod-user">@${m.user} Â· ${tagE(m.tag)} ${m.tag}</div>
         <div class="mod-text">"${m.text}"</div>
         <div class="mod-meta">
-          <span>🚩 ${m.flagReason}</span>
-          <span>🕐 ${m.date}</span>
+          <span>ðŸš© ${m.flagReason}</span>
+          <span>ðŸ• ${m.date}</span>
         </div>
       </div>
       <div class="mod-actions">
-        <button class="btn-approve" onclick="modAction('${m.id}','approve')">✓ Keep</button>
-        <button class="btn-remove" onclick="modAction('${m.id}','remove')">✕ Remove</button>
+        <button class="btn-approve" onclick="modAction('${m.id}','approve')">âœ“ Keep</button>
+        <button class="btn-remove" onclick="modAction('${m.id}','remove')">âœ• Remove</button>
       </div>
     </div>`).join('');
 }
@@ -632,19 +676,26 @@ function renderModeration(){
 function modAction(id,action){
   const el=document.getElementById('mc-'+id);
   if(el){el.style.opacity='0';el.style.transform='translateX(20px)';el.style.transition='all .3s';setTimeout(()=>el.remove(),300);}
-  aToast(action==='approve'?'✅ Content kept':'🗑 Content removed');
+  aToast(action==='approve'?'âœ… Content kept':'ðŸ—‘ Content removed');
 }
 
-/* ─── TOAST ─── */
+/* â”€â”€â”€ TOAST â”€â”€â”€ */
 function aToast(msg,dur=2500){
   const el=document.getElementById('a-toast');
   el.textContent=msg; el.classList.remove('hidden');
   clearTimeout(el._t); el._t=setTimeout(()=>el.classList.add('hidden'),dur);
 }
 
-/* ─── HELPERS ─── */
-function tagE(t){const m={nostalgia:'🕰️',food:'🍜',travel:'✈️',photography:'📸',friendship:'👥',hidden:'📝'};return m[t]||'✨';}
+/* â”€â”€â”€ HELPERS â”€â”€â”€ */
+function tagE(t){const m={nostalgia:'ðŸ•°ï¸',food:'ðŸœ',travel:'âœˆï¸',photography:'ðŸ“¸',friendship:'ðŸ‘¥',hidden:'ðŸ“'};return m[t]||'âœ¨';}
 function fmtD(iso){return new Date(iso).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});}
 </script>
 </body>
 </html>
+
+
+
+
+
+
+

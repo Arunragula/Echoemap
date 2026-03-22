@@ -1326,3 +1326,16 @@ select option { background: var(--bg3); color: var(--text); }
   transition:all var(--tr);
 }
 .chat-input-row button:hover { background:var(--gold2); }
+/* ─── Auth Tabs ─── */
+.auth-tabs {
+  display: flex; gap: .25rem; margin-bottom: 1.1rem;
+  background: rgba(255,255,255,0.04); border-radius: 10px; padding: .25rem;
+}
+.auth-tab {
+  flex: 1; padding: .42rem .4rem; border: none; border-radius: 7px;
+  background: transparent; color: var(--muted);
+  font-family: 'DM Sans', sans-serif; font-size: .8rem; cursor: pointer;
+  transition: all .18s ease;
+}
+.auth-tab.active { background: var(--gold); color: var(--bg); font-weight: 500; }
+.auth-tab:hover:not(.active) { color: var(--text); }

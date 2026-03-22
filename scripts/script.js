@@ -46,6 +46,44 @@ const saveM   = d  => localStorage.setItem('e_memories',  JSON.stringify(d));
 const saveMsgs= d  => localStorage.setItem('e_messages',  JSON.stringify(d));
 const saveFB  = d  => localStorage.setItem('e_feedback',  JSON.stringify(d));
 
+const ALLOW_MANUAL_LOCATION_OVERRIDE = false;
+const MIN_UNLOCK_ACCURACY_M = 150;
+const UNLOCK_COOLDOWN_MS = 8000;
+let _unlockCooldownUntil = 0;
+
+function cleanText(value, maxLen = 240) {
+  return String(value || '')
+    .replace(/[<>]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, maxLen);
+}
+
+function cleanHandle(value, maxLen = 32) {
+  return String(value || '')
+    .replace(/[^a-zA-Z0-9_.-]/g, '')
+    .trim()
+    .slice(0, maxLen);
+}
+
+function esc(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function hasReliableGps(coords) {
+  if (!coords || typeof coords.accuracy !== 'number') return false;
+  return coords.accuracy > 0 && coords.accuracy <= MIN_UNLOCK_ACCURACY_M;
+}
+
+function showVpnUnlockWarning() {
+  showToast('Turn off VPN/proxy and enable Precise Location to unlock memories.', 4200);
+}
+
 
 /* ════════════════════════════════════
    REVERSE GEOCODING — Nominatim (OpenStreetMap)
@@ -134,14 +172,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (typeof SUPABASE_ENABLED !== 'undefined' && SUPABASE_ENABLED) {
     const ok = await initSupabase();
     if (ok) {
-      listenAuthState(fbUser => {
-        if (fbUser && !localStorage.getItem('e_user')) {
+      listenAuthState(sbUser => {
+        if (sbUser && !localStorage.getItem('e_user')) {
           user = {
-            name:     fbUser.displayName || fbUser.email?.split('@')[0] || 'Explorer',
-            av:       selAv,
-            uid:      fbUser.uid,
-            email:    fbUser.email,
-            photoURL: fbUser.photoURL
+            name:  sbUser.user_metadata?.full_name || sbUser.email?.split('@')[0] || 'Explorer',
+            av:    sbUser.user_metadata?.avatar    || selAv || '🌙',
+            uid:   sbUser.id,
+            email: sbUser.email || ''
           };
           localStorage.setItem('e_user', JSON.stringify(user));
           launchApp();
@@ -181,18 +218,47 @@ function pickAv(btn) {
   selAv = btn.dataset.av;
 }
 
-function enterApp() {
-  const n = (document.getElementById('e-name').value || '').trim() || 'Explorer';
-  user = { name: n, av: selAv, uid: 'local_' + Date.now() };
+async function enterApp() {
+  const n = cleanText(document.getElementById('e-name').value, 24) || 'Explorer';
+
+  let uid = 'local_' + Date.now();
+
+  if (typeof SUPABASE_ENABLED !== 'undefined' && SUPABASE_ENABLED) {
+    try {
+      // getSessionUid() reuses existing session — no new anon call if already signed in
+      const existing = await getSessionUid();
+      if (existing) {
+        uid = existing;
+      } else {
+        const anonUser = await signInAnonymously();
+        if (anonUser) uid = anonUser.id;
+      }
+    } catch (e) { console.warn('Auth check failed, using local uid:', e.message); }
+  }
+
+  user = { name: n, av: selAv, uid };
   localStorage.setItem('e_user', JSON.stringify(user));
-  // Real user — no demo data seeded
   launchApp();
 }
 
-function enterDemo() {
-  user = { name: 'DemoUser', av: '🌙', uid: 'demo' };
+async function enterDemo() {
+  let uid = 'demo';
+
+  if (typeof SUPABASE_ENABLED !== 'undefined' && SUPABASE_ENABLED) {
+    try {
+      const existing = await getSessionUid();
+      if (existing) {
+        uid = existing;
+      } else {
+        const anonUser = await signInAnonymously();
+        if (anonUser) uid = anonUser.id;
+      }
+    } catch (e) { console.warn('Auth check failed for demo:', e.message); }
+  }
+
+  user = { name: 'DemoUser', av: '🌙', uid };
   localStorage.setItem('e_user', JSON.stringify(user));
-  // Seed demo content only for demo sessions
+
   if (!localStorage.getItem('e_demo_seeded')) {
     saveM(DEMO_MEMORIES);
     saveMsgs(DEMO_MESSAGES);
@@ -200,6 +266,69 @@ function enterDemo() {
     localStorage.setItem('e_demo_seeded', '1');
   }
   launchApp();
+}
+
+
+/* ════════════════════════════════════
+   AUTH TABS + EMAIL/PASSWORD
+════════════════════════════════════ */
+function switchAuthTab(tab, btn) {
+  ['login','signup','guest'].forEach(t => {
+    const el = document.getElementById('auth-tab-' + t);
+    if (el) el.classList.remove('active');
+  });
+  document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
+  const active = document.getElementById('auth-tab-' + tab);
+  if (active) active.classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+async function loginWithEmail() {
+  const email = (document.getElementById('login-email')?.value || '').trim();
+  const pass  = (document.getElementById('login-password')?.value || '').trim();
+  if (!email || !pass) { showToast('Enter email and password'); return; }
+  if (typeof SUPABASE_ENABLED !== 'undefined' && SUPABASE_ENABLED) {
+    showToast('Logging in…');
+    const sbUser = await signInWithEmail(email, pass);
+    if (sbUser) {
+      user = {
+        name:  sbUser.user_metadata?.full_name || email.split('@')[0],
+        av:    sbUser.user_metadata?.avatar   || selAv || '🌙',
+        uid:   sbUser.id,
+        email: sbUser.email
+      };
+      localStorage.setItem('e_user', JSON.stringify(user));
+      launchApp();
+    }
+  } else {
+    showToast('Set SUPABASE_ENABLED = true first');
+  }
+}
+
+async function signupWithEmail() {
+  const name  = cleanText(document.getElementById('signup-name')?.value, 24) || 'Explorer';
+  const email = (document.getElementById('signup-email')?.value || '').trim();
+  const pass  = (document.getElementById('signup-password')?.value || '').trim();
+  if (!email || !pass) { showToast('Enter email and password'); return; }
+  if (pass.length < 6)  { showToast('Password must be at least 6 characters'); return; }
+  if (typeof SUPABASE_ENABLED !== 'undefined' && SUPABASE_ENABLED) {
+    showToast('Creating account…');
+    const sbUser = await signUpWithEmail(email, pass, name, selAv);
+    if (sbUser) {
+      user = { name, av: selAv, uid: sbUser.id, email: sbUser.email };
+      localStorage.setItem('e_user', JSON.stringify(user));
+      showToast('✅ Account created! Welcome to Echoes.');
+      launchApp();
+    }
+  } else {
+    showToast('Set SUPABASE_ENABLED = true first');
+  }
+}
+
+async function forgotPassword() {
+  const email = (document.getElementById('login-email')?.value || '').trim();
+  if (!email) { showToast('Enter your email first'); return; }
+  if (typeof resetPassword === 'function') await resetPassword(email);
 }
 
 async function signInGoogle() {
@@ -282,6 +411,7 @@ function launchApp() {
   // Let the DOM repaint before running JS that reads/writes elements
   requestAnimationFrame(() => {
     updateUserUI();
+    syncCloudData();
     renderStats();
     renderTeasers();
     goSec('dashboard');
@@ -450,10 +580,16 @@ function applyFilt(f, btn) {
 
 function fetchMemLoc() {
   const dispEl = document.getElementById('m-loc');
+  if (!dispEl) return;
   dispEl.textContent = 'Fetching GPS…';
-  if (!navigator.geolocation) { useMemMock(); return; }
+  if (!navigator.geolocation) { showManualLocInput('mem'); return; }
   navigator.geolocation.getCurrentPosition(
     p => {
+      if (!hasReliableGps(p.coords)) {
+        dispEl.textContent = 'Precise GPS needed (turn off VPN/proxy)';
+        showVpnUnlockWarning();
+        return;
+      }
       memLat = p.coords.latitude;
       memLng = p.coords.longitude;
       dispEl.textContent = '📍 Getting place name…';
@@ -463,11 +599,57 @@ function fetchMemLoc() {
       });
     },
     err => {
-      console.warn('GPS error:', err);
-      useMemMock();
+      console.warn('GPS blocked:', err.code);
+      showManualLocInput('mem');
     },
     { enableHighAccuracy: true, timeout: 8000 }
   );
+}
+
+function showManualLocInput(type) {
+  if (!ALLOW_MANUAL_LOCATION_OVERRIDE) {
+    showToast('Manual location is disabled for security. Enable precise GPS and turn off VPN.', 4200);
+    return;
+  }
+  const isMsg = type === 'msg';
+  const el = document.getElementById(isMsg ? 'mg-loc' : 'm-loc');
+  if (!el) return;
+  el.innerHTML = '<div style="display:flex;flex-direction:column;gap:.35rem;width:100%">'
+    + '<small style="color:var(--muted)">GPS blocked — enter location:</small>'
+    + '<input id="manual-loc" type="text" placeholder="e.g. FC Road, Pune or 18.52, 73.85" '
+    + 'style="font-size:.78rem;padding:.4rem .7rem;border-radius:6px;border:1px solid var(--cb);background:var(--bg3);color:var(--text);width:100%"/>'
+    + '<button onclick="applyManualLoc(\'' + type + '\')" '
+    + 'style="font-size:.75rem;padding:.32rem .7rem;background:var(--gold);border:none;border-radius:6px;cursor:pointer;color:var(--bg)">Set Location</button>'
+    + '</div>';
+}
+
+function applyManualLoc(type) {
+  const isMsg = type === 'msg';
+  const inp = document.getElementById('manual-loc');
+  if (!inp || !inp.value.trim()) return;
+  const val = inp.value.trim();
+  const coordMatch = val.match(/(-?[0-9.]+)[,\s]+(-?[0-9.]+)/);
+  let lat, lng, name;
+  if (coordMatch) {
+    lat = parseFloat(coordMatch[1]);
+    lng = parseFloat(coordMatch[2]);
+    name = null;
+  } else {
+    lat = 18.5204; lng = 73.8567; name = val;
+  }
+  if (isMsg) { msgLatV = lat; msgLngV = lng; }
+  else       { memLat  = lat; memLng  = lng; }
+  const key = lat.toFixed(3) + ',' + lng.toFixed(3);
+  if (name) _geoCache[key] = name;
+  const el = document.getElementById(isMsg ? 'mg-loc' : 'm-loc');
+  if (el) {
+    if (name) { el.textContent = '📍 ' + name; }
+    else {
+      el.textContent = '📍 Getting place name…';
+      reverseGeocode(lat, lng).then(n => { if (el) el.textContent = n; });
+    }
+  }
+  showToast('📍 Location set!');
 }
 function useMemMock() {
   memLat = 18.5204 + (Math.random() - 0.5) * 0.01;
@@ -479,9 +661,16 @@ function useMemMock() {
 }
 
 async function saveMemory() {
-  const cap = (document.getElementById('m-cap').value || '').trim();
+  const cap = cleanText(document.getElementById('m-cap').value, 500);
   if (!cap) { showToast('✏️ Add a caption first'); return; }
   if (!memLat) { showToast('📍 Please fetch your location first'); return; }
+
+  // Get real Supabase uid if available, fall back to stored uid
+  let creatorUid = user.uid || 'local';
+  if (typeof getSessionUid === 'function') {
+    const sessionUid = await getSessionUid();
+    if (sessionUid) creatorUid = sessionUid;
+  }
 
   const mem = {
     id: 'mem_' + Date.now(),
@@ -495,13 +684,23 @@ async function saveMemory() {
     visibility: document.getElementById('m-vis').value,
     creator: user.name,
     creatorAv: user.av,
-    creatorUid: user.uid || 'local',
+    creatorUid,
     tag: document.getElementById('m-tag').value,
     likes: 0,
     comments: []
   };
 
-  await dbSaveMemory(mem);
+  try {
+    const remoteId = await dbSaveMemory(mem);
+    if (remoteId) mem.id = remoteId;
+    const mems = getM();
+    mems.unshift(mem);
+    saveM(mems);
+  } catch (err) {
+    console.error('dbSaveMemory failed:', err);
+    showToast('Cloud save failed. Not saved: ' + errToText(err), 4200);
+    return;
+  }
 
   // Reset form
   imgData = null; selFilter = 'original'; memLat = null; memLng = null;
@@ -545,13 +744,15 @@ function onMsgImg(e) {
 
 function fetchMsgLoc() {
   const el = document.getElementById('mg-loc');
-  if (!navigator.geolocation) {
-    msgLatV = 18.5204; msgLngV = 73.8567;
-    if (el) el.textContent = '~18.5204, 73.8567 (demo)';
-    return;
-  }
+  if (!navigator.geolocation) { showManualLocInput('msg'); return; }
+  if (el) el.textContent = 'Fetching GPS…';
   navigator.geolocation.getCurrentPosition(
     p => {
+      if (!hasReliableGps(p.coords)) {
+        if (el) el.textContent = 'Precise GPS needed (turn off VPN/proxy)';
+        showVpnUnlockWarning();
+        return;
+      }
       msgLatV = p.coords.latitude; msgLngV = p.coords.longitude;
       if (el) el.textContent = '📍 Getting place name…';
       reverseGeocode(msgLatV, msgLngV).then(name => {
@@ -559,24 +760,25 @@ function fetchMsgLoc() {
         showToast('📍 ' + name);
       });
     },
-    () => {
-      msgLatV = 18.5204; msgLngV = 73.8567;
-      reverseGeocode(msgLatV, msgLngV).then(name => { if (el) el.textContent = name + ' (demo)'; });
+    err => {
+      console.warn('GPS blocked:', err.code);
+      showManualLocInput('msg');
     },
     { enableHighAccuracy: true, timeout: 8000 }
   );
 }
 
 async function saveMessage() {
-  const txt = (document.getElementById('mg-txt').value || '').trim();
+  const txt = cleanText(document.getElementById('mg-txt').value, 500);
   if (!txt) { showToast('✏️ Write a message first'); return; }
   if (!msgLatV) { showToast('📍 Please fetch drop location first'); return; }
+  const taggedPerson = cleanHandle((document.getElementById('mg-tagged').value || '').replace('@', ''));
 
   const msg = {
     id: 'msg_' + Date.now(),
     type: msgType,
     text: txt,
-    taggedPerson: (document.getElementById('mg-tagged').value || '').trim().replace('@','') || null,
+    taggedPerson: taggedPerson || null,
     category: document.getElementById('mg-cat').value,
     lat: msgLatV, lng: msgLngV,
     locationName: _geoCache[msgLatV.toFixed(3) + ',' + msgLngV.toFixed(3)] || null,
@@ -589,7 +791,17 @@ async function saveMessage() {
     image: msgImgData
   };
 
-  await dbSaveMessage(msg);
+  try {
+    const remoteId = await dbSaveMessage(msg);
+    if (remoteId) msg.id = remoteId;
+    const msgs = getMsgs();
+    msgs.unshift(msg);
+    saveMsgs(msgs);
+  } catch (err) {
+    console.error('dbSaveMessage failed:', err);
+    showToast('Cloud save failed. Message not saved: ' + errToText(err), 4200);
+    return;
+  }
 
   // Reset
   document.getElementById('mg-txt').value = '';
@@ -619,9 +831,15 @@ function haversine(la1, lo1, la2, lo2) {
 }
 
 function doUnlock() {
+  if (Date.now() < _unlockCooldownUntil) {
+    const waitMs = _unlockCooldownUntil - Date.now();
+    showToast('Please wait ' + Math.ceil(waitMs / 1000) + 's before next unlock check.');
+    return;
+  }
   const btn = document.querySelector('[onclick="doUnlock()"]');
   if (btn) { btn.textContent = '⏳ Checking…'; btn.disabled = true; }
   showToast('🔍 Checking nearby memories…');
+  _unlockCooldownUntil = Date.now() + UNLOCK_COOLDOWN_MS;
 
   const go = async (lat, lng) => {
     const mems = getM();
@@ -644,11 +862,22 @@ function doUnlock() {
   };
 
   if (!navigator.geolocation) {
-    go(18.5204, 73.8567);
+    if (btn) { btn.textContent = 'Check Location & Unlock'; btn.disabled = false; }
+    showToast('Precise GPS is required to unlock memories.', 3800);
   } else {
     navigator.geolocation.getCurrentPosition(
-      p => go(p.coords.latitude, p.coords.longitude),
-      () => go(18.5204, 73.8567),
+      p => {
+        if (!hasReliableGps(p.coords)) {
+          if (btn) { btn.textContent = 'Check Location & Unlock'; btn.disabled = false; }
+          showVpnUnlockWarning();
+          return;
+        }
+        go(p.coords.latitude, p.coords.longitude);
+      },
+      () => {
+        if (btn) { btn.textContent = 'Check Location & Unlock'; btn.disabled = false; }
+        showToast('Location permission denied. Enable GPS and try again.', 3800);
+      },
       { enableHighAccuracy: true, timeout: 8000 }
     );
   }
@@ -727,6 +956,7 @@ function filterNearby(t, btn) {
 
 /* ─── NEARBY GPS STATE ─── */
 let _nearbyLat = null, _nearbyLng = null;
+let _nearbyIsReal = false;
 const NEARBY_RADIUS_M = 5000; // show items within 5km
 
 function renderNearby() {
@@ -738,6 +968,7 @@ function renderNearby() {
 
   const build = (lat, lng, isReal) => {
     _nearbyLat = lat; _nearbyLng = lng;
+    _nearbyIsReal = !!isReal;
 
     const mems = getM().filter(m => m.visibility === 'public');
     const msgs = getMsgs().filter(m => m.type !== 'tagged');
@@ -834,7 +1065,10 @@ function renderNearby() {
 
 /* Try to unlock a specific nearby item */
 function tryUnlockItem(memId) {
-  if (!_nearbyLat) { doUnlock(); return; }
+  if (!_nearbyLat || !_nearbyIsReal) {
+    showVpnUnlockWarning();
+    return;
+  }
   const mems = getM();
   const m = mems.find(x => x.id === memId);
   if (!m) return;
@@ -857,7 +1091,7 @@ function tryUnlockItem(memId) {
 function renderInbox() {
   const msgs = getMsgs();
   // Only show messages tagged to THIS user
-  const mine = msgs.filter(m => m.taggedPerson === user.name);
+  const mine = msgs.filter(m => String(m.taggedPerson || '').toLowerCase() === String(user.name || '').toLowerCase());
   const pub  = msgs.filter(m => !m.taggedPerson && m.type !== 'public');
   const all  = [...mine, ...pub];
 
@@ -865,33 +1099,38 @@ function renderInbox() {
   if (!list) return;
   if (!all.length) { list.innerHTML = emptyState('💌', 'No messages for you yet. Ask a friend to drop one at a place you both love!'); return; }
 
-  list.innerHTML = all.map(msg => `
-    <div class="inbox-card ${msg.locked?'locked':'unlocked'}">
-      <div class="inbox-top">
-        <div class="inbox-av">${msg.senderAv || '👤'}</div>
-        <div>
-          <div class="inbox-from"><strong>@${msg.sender}</strong> left something for you</div>
-          <div style="font-size:.7rem;color:var(--dim);font-family:'DM Mono',monospace">${fmtDate(msg.createdAt)}</div>
+  list.innerHTML = all.map(msg => {
+    const safeSender = esc(msg.sender || 'unknown');
+    const safeText = esc(msg.text || 'A secret message is waiting for you…');
+    const safeLoc = esc(msg.locationName || (msg.lat.toFixed(3) + ', ' + msg.lng.toFixed(3)));
+    return `
+      <div class="inbox-card ${msg.locked?'locked':'unlocked'}">
+        <div class="inbox-top">
+          <div class="inbox-av">${msg.senderAv || '👤'}</div>
+          <div>
+            <div class="inbox-from"><strong>@${safeSender}</strong> left something for you</div>
+            <div style="font-size:.7rem;color:var(--dim);font-family:'DM Mono',monospace">${fmtDate(msg.createdAt)}</div>
+          </div>
+          <div class="inbox-lock">${msg.locked?'🔒':'🔓'}</div>
         </div>
-        <div class="inbox-lock">${msg.locked?'🔒':'🔓'}</div>
-      </div>
-      <div class="inbox-preview${msg.locked?' blurred':''}">${msg.locked?'A secret message is waiting for you…':msg.text}</div>
-      <div class="inbox-coords">
-        <span>📍 ${msg.locationName || (msg.lat.toFixed(3) + ', ' + msg.lng.toFixed(3))}</span>
-        <span>🎯 ${msg.radius}m radius</span>
-        <span>${tagEmoji(msg.category)} ${msg.category}</span>
-      </div>
-      ${msg.locked ? `<div style="margin-top:.75rem;display:flex;gap:.5rem;flex-wrap:wrap">
-        <button class="btn-ghost" style="font-size:.8rem;padding:.45rem .9rem"
-          onclick="showToast('📍 Visit: ' + (msg.locationName || '${msg.lat.toFixed(3)}, ${msg.lng.toFixed(3)}') + ' to unlock')">
-          📍 Get Place Hint
-        </button>
-        <button class="btn-ghost" style="font-size:.8rem;padding:.45rem .9rem"
-          onclick="inviteTaggedPerson('${msg.id}','${msg.taggedPerson || 'friend'}','${msg.locationName || msg.lat.toFixed(3)}')">
-          📤 Share Invite
-        </button>
-      </div>` : ''}
-    </div>`).join('');
+        <div class="inbox-preview${msg.locked?' blurred':''}">${msg.locked?'A secret message is waiting for you…':safeText}</div>
+        <div class="inbox-coords">
+          <span>📍 ${safeLoc}</span>
+          <span>🎯 ${msg.radius}m radius</span>
+          <span>${tagEmoji(msg.category)} ${msg.category}</span>
+        </div>
+        ${msg.locked ? `<div style="margin-top:.75rem;display:flex;gap:.5rem;flex-wrap:wrap">
+          <button class="btn-ghost" style="font-size:.8rem;padding:.45rem .9rem"
+            onclick="showToast('📍 Visit the pinned location to unlock')">
+            📍 Get Place Hint
+          </button>
+          <button class="btn-ghost" style="font-size:.8rem;padding:.45rem .9rem"
+            onclick="inviteTaggedPerson('${msg.id}')">
+            📤 Share Invite
+          </button>
+        </div>` : ''}
+      </div>`;
+  }).join('');
 }
 
 /* ════════════════════════════════════
@@ -1043,42 +1282,47 @@ function renderComments(comments) {
     return;
   }
   el.innerHTML = comments.map(c =>
-    `<div class="comment-item"><span class="comment-author">@${c.author}</span> ${c.text}</div>`
+    `<div class="comment-item"><span class="comment-author">@${esc(c.author)}</span> ${esc(c.text)}</div>`
   ).join('');
 }
 
-function likeIt() {
+async function likeIt() {
   if (!curDetailId) return;
+  // Update locally immediately
   const mems = getM();
   const m = mems.find(x => x.id === curDetailId);
   if (!m) return;
   m.likes = (m.likes || 0) + 1;
-  saveM(mems); // optimistic update
+  saveM(mems);
   const el = document.getElementById('dm-likes');
   if (el) el.textContent = m.likes;
-  dbLikeMemory(curDetailId).catch(e => console.warn('Like sync failed:', e));
   renderStats();
   showToast('❤️ Liked!');
+  // Sync to Supabase silently
+  dbLikeMemory(curDetailId).catch(e => console.warn('Like sync:', e));
 }
 
 function emojiReact(e) { showToast(e + ' Reaction added!'); }
 
-function postComment() {
+async function postComment() {
   const inp = document.getElementById('comment-inp');
   if (!inp || !curDetailId) return;
-  const txt = inp.value.trim();
+  const txt = cleanText(inp.value, 300);
   if (!txt) return;
+  // Save locally immediately
   const mems = getM();
   const m = mems.find(x => x.id === curDetailId);
-  if (!m) return;
-  m.comments = m.comments || [];
-  m.comments.push({ author: user.name, authorUid: user.uid || 'local', text: txt, ts: Date.now() });
-  saveM(mems); // optimistic
-  renderComments(m.comments);
+  if (m) {
+    m.comments = m.comments || [];
+    m.comments.push({ author: user.name, authorUid: user.uid || 'local', text: txt, ts: Date.now() });
+    saveM(mems);
+    renderComments(m.comments);
+  }
   inp.value = '';
-  dbAddComment(curDetailId, txt, user.uid || 'local', user.name)
-    .catch(e => console.warn('Comment sync failed:', e));
   showToast('💬 Comment posted!');
+  // Sync silently
+  dbAddComment(curDetailId, txt, user.uid || 'local', user.name)
+    .catch(e => console.warn('Comment sync:', e));
 }
 
 /* ════════════════════════════════════
@@ -1133,10 +1377,12 @@ async function submitFeedback() {
     source:    document.getElementById('fb-source').value  || 'unknown',
     yn:       fbYN || 'unknown',
     features,
-    ts: Date.now()
+    uid:      user.uid || null,
+    ts:       Date.now()
   };
 
-  await dbSaveFeedback(entry);
+  try { await dbSaveFeedback(entry); }
+  catch(e) { console.warn('Feedback save error:', e); }
 
   const fc = document.getElementById('fb-form-card');
   if (fc) fc.classList.add('hidden');
@@ -1293,6 +1539,15 @@ function handleDeepLink() {
    Generate a link they can click to join and see their message
 ════════════════════════════════════ */
 function inviteTaggedPerson(msgId, taggedName, locationName) {
+  if (!taggedName || !locationName) {
+    const msg = getMsgs().find(m => m.id === msgId);
+    if (msg) {
+      taggedName = taggedName || msg.taggedPerson || 'friend';
+      locationName = locationName || msg.locationName || (msg.lat.toFixed(3) + ', ' + msg.lng.toFixed(3));
+    }
+  }
+  taggedName = cleanText(taggedName || 'friend', 40);
+  locationName = cleanText(locationName || 'this location', 120);
   const url  = `${window.location.origin}?invite=${msgId}`;
   const text = `Hey ${taggedName}! I left a hidden message for you at "${locationName}". You need to physically visit that exact place to unlock it. Join Echoes to see it 🔒`;
   showShareModal({ title: 'You have a secret message waiting', text, url }, url);
@@ -1324,6 +1579,60 @@ function showToast(msg, dur = 2600) {
   el.classList.remove('hidden');
   clearTimeout(el._t);
   el._t = setTimeout(() => el.classList.add('hidden'), dur);
+}
+
+function errToText(err) {
+  if (!err) return 'Unknown error';
+  if (typeof err === 'string') return err;
+  if (err.message) return err.message;
+  if (err.details && err.hint) return err.details + ' | ' + err.hint;
+  if (err.details) return err.details;
+  try { return JSON.stringify(err); }
+  catch { return 'Unexpected error'; }
+}
+
+async function syncCloudData() {
+  if (typeof SUPABASE_ENABLED === 'undefined' || !SUPABASE_ENABLED) return;
+  if (typeof dbGetPublicMemories !== 'function' || typeof dbGetPublicMessages !== 'function') return;
+
+  try {
+    const uid = (typeof getSessionUid === 'function' ? await getSessionUid() : null) || user.uid || null;
+
+    const [publicMems, publicMsgs, myMems, myMsgs] = await Promise.all([
+      dbGetPublicMemories(null, 120),
+      dbGetPublicMessages(120),
+      uid ? dbGetMyMemories(uid) : Promise.resolve([]),
+      uid ? dbGetMessagesForUser(uid) : Promise.resolve([])
+    ]);
+
+    const mergedMemsMap = new Map();
+    // In cloud mode, keep only cloud IDs to avoid mixing demo/local rows.
+    const existingCloudMems = getM().filter(m => isCloudId(m?.id));
+    [...existingCloudMems, ...publicMems, ...myMems].forEach(m => { if (m?.id) mergedMemsMap.set(m.id, m); });
+    saveM(Array.from(mergedMemsMap.values()));
+
+    const mergedMsgsMap = new Map();
+    const existingCloudMsgs = getMsgs().filter(m => isCloudId(m?.id));
+    [...existingCloudMsgs, ...publicMsgs, ...myMsgs].forEach(m => { if (m?.id) mergedMsgsMap.set(m.id, m); });
+    saveMsgs(Array.from(mergedMsgsMap.values()));
+
+    renderStats();
+    renderTeasers();
+
+    const active = document.querySelector('.s.active')?.id || '';
+    if (active === 's-gallery') renderGallery();
+    if (active === 's-nearby') renderNearby();
+    if (active === 's-inbox') renderInbox();
+    if (active === 's-places') renderPlaces();
+    if (active === 's-unlock') renderUnlockList();
+  } catch (err) {
+    console.warn('Cloud sync failed:', errToText(err));
+  }
+}
+
+function isCloudId(id) {
+  return typeof id === 'string' &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
 }
 
 /* ════════════════════════════════════

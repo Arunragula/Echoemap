@@ -1,61 +1,28 @@
 {
-  "version": 2,
-  "name": "echoes-app",
-  "builds": [
+  "name": "Echoes \u2014 Memories Unlocked by Place",
+  "short_name": "Echoes",
+  "description": "Drop memories at places. Return to unlock them.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0b0c10",
+  "theme_color": "#c8a96e",
+  "orientation": "portrait-primary",
+  "icons": [
     {
-      "src": "index.html",
-      "use": "@vercel/static"
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
     }
   ],
-  "routes": [
-    {
-      "src": "/admin",
-      "dest": "/admin.html"
-    },
-    {
-      "src": "/auth/callback",
-      "dest": "/index.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "X-Content-Type-Options",    "value": "nosniff" },
-        { "key": "X-Frame-Options",           "value": "DENY" },
-        { "key": "X-XSS-Protection",          "value": "1; mode=block" },
-        { "key": "Referrer-Policy",           "value": "strict-origin-when-cross-origin" },
-        { "key": "Permissions-Policy",        "value": "camera=(), microphone=(), geolocation=(self)" }
-      ]
-    },
-    {
-      "source": "/js/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-      ]
-    },
-    {
-      "source": "/css/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-      ]
-    },
-    {
-      "source": "/icons/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-      ]
-    },
-    {
-      "source": "/service-worker.js",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-cache" },
-        { "key": "Service-Worker-Allowed", "value": "/" }
-      ]
-    }
+  "categories": [
+    "social",
+    "lifestyle",
+    "photography"
   ]
 }
