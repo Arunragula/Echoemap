@@ -1,12 +1,8 @@
-/* ═══════════════════════════════════════════════
-   Echoes — js/app.js
-   Production app logic — all features
-   localStorage MVP, Firebase-ready
-═══════════════════════════════════════════════ */
+ 
 
 'use strict';
 
-/* ─── STATE ─── */
+ 
 let user         = { name: 'Explorer', av: '🌙', uid: null };
 let selAv        = '🌙';
 let selFilter    = 'original';
@@ -20,9 +16,9 @@ let galFilter    = 'all', nearbyFilter = 'all';
 let deferredInstall = null;
 let otpConfirmation = null;
 
-/* ─── PRODUCTION: Demo data removed ─── */
+ 
 
-/* ─── STORAGE HELPERS ─── */
+ 
 const getM    = () => JSON.parse(localStorage.getItem('e_memories')  || '[]');
 const getMsgs = () => JSON.parse(localStorage.getItem('e_messages')  || '[]');
 const saveM   = d  => localStorage.setItem('e_memories',  JSON.stringify(d));
@@ -67,11 +63,7 @@ function showVpnUnlockWarning() {
 }
 
 
-/* ════════════════════════════════════
-   REVERSE GEOCODING — Nominatim (OpenStreetMap)
-   Free, no API key, works in India
-   Cache results to avoid redundant lookups
-════════════════════════════════════ */
+ 
 const _geoCache = {};
 
 async function reverseGeocode(lat, lng) {
@@ -85,10 +77,7 @@ async function reverseGeocode(lat, lng) {
     );
     const data = await res.json();
     const a = data.address || {};
-
-    // Build a human-readable short name
-    // Priority: road/amenity > suburb/neighbourhood > city_district > city > state
-    const parts = [];
+     const parts = [];
     const road = a.road || a.amenity || a.shop || a.tourism || a.leisure;
     const area = a.suburb || a.neighbourhood || a.city_district || a.quarter;
     const city = a.city || a.town || a.village || a.municipality;
@@ -101,77 +90,55 @@ async function reverseGeocode(lat, lng) {
     _geoCache[key] = name;
     return name;
   } catch {
-    // Fallback to short coords if network fails
-    _geoCache[key] = lat.toFixed(3) + ', ' + lng.toFixed(3);
+     _geoCache[key] = lat.toFixed(3) + ', ' + lng.toFixed(3);
     return _geoCache[key];
   }
 }
-
-// Sync version — returns cached name or short coords while geocoding in background
-function getLocationName(lat, lng, onUpdate) {
+ function getLocationName(lat, lng, onUpdate) {
   const key = lat.toFixed(3) + ',' + lng.toFixed(3);
   if (_geoCache[key]) return _geoCache[key];
-  // Start async lookup, call onUpdate when done
-  reverseGeocode(lat, lng).then(name => {
+   reverseGeocode(lat, lng).then(name => {
     if (onUpdate) onUpdate(name);
   });
   return lat.toFixed(3) + ', ' + lng.toFixed(3); // temp placeholder
 }
 
 
-/* ════════════════════════════════════
-   FOOTER LOADER — loads footer.html into #footer-root
-════════════════════════════════════ */
+ 
 function loadFooter() {
-  // Footer is inlined in #landing — nothing to load
-}
+ }
 
-/* ════════════════════════════════════
-   INIT
-════════════════════════════════════ */
+ 
 document.addEventListener('DOMContentLoaded', async () => {
-
-  // PWA install prompt
-  window.addEventListener('beforeinstallprompt', e => {
+   window.addEventListener('beforeinstallprompt', e => {
     e.preventDefault();
     deferredInstall = e;
     document.getElementById('btn-pwa-install').classList.remove('hidden');
   });
   window.addEventListener('appinstalled', () => showToast('✅ Echoes added to your home screen!'));
-
-  // iOS install banner
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
   if (isIOS && !window.navigator.standalone) {
     document.getElementById('ios-banner').classList.remove('hidden');
   }
-
-  // Register service worker
-  if ('serviceWorker' in navigator) {
+   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('service-worker.js').catch(() => {});
   }
-
-  // ── Supabase init + auth routing ──
-  if (typeof SUPABASE_ENABLED !== 'undefined' && SUPABASE_ENABLED) {
+   if (typeof SUPABASE_ENABLED !== 'undefined' && SUPABASE_ENABLED) {
     const ok = await initSupabase();
     if (ok) {
-      // Detect OAuth return (Google redirects back with access_token in hash or oauth_return param)
-      const urlParams  = new URLSearchParams(window.location.search);
+       const urlParams  = new URLSearchParams(window.location.search);
       const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
       const isOAuthReturn = urlParams.has('oauth_return') ||
                             hashParams.has('access_token') ||
                             window.location.hash.includes('access_token');
-
-      // Always check for an existing valid session first
-      const sessionUser = await getSessionUser();
+       const sessionUser = await getSessionUser();
 
       if (sessionUser) {
-        // Valid session found — decide if user needs username setup
-        const needsSetup = await userNeedsUsernameSetup(sessionUser);
+         const needsSetup = await userNeedsUsernameSetup(sessionUser);
         const storedUser = localStorage.getItem('e_user');
 
         if (needsSetup) {
-          // New user via Google / OAuth — show username setup before entering app
-          showUsernameSetupModal(sessionUser);
+           showUsernameSetupModal(sessionUser);
         } else if (storedUser) {
           try {
             user = JSON.parse(storedUser);
@@ -184,23 +151,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else {
           loadUserAndLaunch(sessionUser);
         }
-
-        // Clean OAuth tokens from URL bar
-        if (isOAuthReturn || window.location.hash.includes('access_token')) {
+         if (isOAuthReturn || window.location.hash.includes('access_token')) {
           window.history.replaceState({}, document.title, window.location.pathname);
         }
-
-        // Listen for future auth events (sign-out, token refresh)
-        listenAuthState((event, sbUser) => {
+         listenAuthState((event, sbUser) => {
           if (event === 'SIGNED_OUT') {
             localStorage.removeItem('e_user');
           }
         });
         return; // ← early return: we've handled everything
       }
-
-      // No existing session — register listener for future logins/signups
-      listenAuthState((event, sbUser) => {
+       listenAuthState((event, sbUser) => {
         if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && sbUser) {
           if (!localStorage.getItem('e_user')) {
             userNeedsUsernameSetup(sbUser).then(needsSetup => {
@@ -218,19 +179,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
   }
-
-  // Check for returning guest/local user (no Supabase session required)
-  const saved = localStorage.getItem('e_user');
+   const saved = localStorage.getItem('e_user');
   if (saved) {
     try {
       user = JSON.parse(saved);
-      // If user has a cloud uid, verify session is still alive
-      if (user.uid && !user.uid.startsWith('local_') &&
+       if (user.uid && !user.uid.startsWith('local_') &&
           typeof getSessionUser === 'function' && SUPABASE_ENABLED) {
         const live = await getSessionUser();
         if (!live) {
-          // Session expired — force re-login
-          localStorage.removeItem('e_user');
+           localStorage.removeItem('e_user');
           return;
         }
         user.uid = live.id; // refresh
@@ -240,8 +197,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       localStorage.removeItem('e_user');
     }
   }
-  // else: landing page stays visible
-});
+ });
 
 function installPWA() {
   if (!deferredInstall) return;
@@ -252,9 +208,7 @@ function installPWA() {
   });
 }
 
-/* ════════════════════════════════════
-   AUTH — ENTRY
-════════════════════════════════════ */
+ 
 function pickAv(btn) {
   document.querySelectorAll('.av-btn').forEach(b => b.classList.remove('sel'));
   btn.classList.add('sel');
@@ -275,12 +229,11 @@ async function enterApp() {
   launchApp();
 }
 
-/* ─── loadUserAndLaunch: fetch profile from DB and launch ─── */
+ 
 async function loadUserAndLaunch(sbUser) {
   if (!sbUser) return;
   try {
-    // Try to get stored profile from users table
-    const { data } = await sb().from('users').select('name, username, avatar').eq('auth_uid', sbUser.id).single();
+     const { data } = await sb().from('users').select('name, username, avatar').eq('auth_uid', sbUser.id).single();
     const name = data?.username || data?.name ||
                  sbUser.user_metadata?.full_name || sbUser.email?.split('@')[0] || 'Explorer';
     const av   = data?.avatar || sbUser.user_metadata?.avatar || '🌙';
@@ -297,10 +250,9 @@ async function loadUserAndLaunch(sbUser) {
   launchApp();
 }
 
-/* ─── Username Setup Modal (shown after Google OAuth / new email signup) ─── */
+ 
 function showUsernameSetupModal(sbUser) {
-  // Remove existing if any
-  const existing = document.getElementById('username-setup-modal');
+   const existing = document.getElementById('username-setup-modal');
   if (existing) existing.remove();
 
   const avatars = ['🌙','🔥','🌿','🌊','✨','📸','🎭','🗺️'];
@@ -377,8 +329,7 @@ function pickSetupAv(btn, av) {
   });
   btn.style.borderColor = '#c8a96e';
   btn.style.background  = 'rgba(200,169,110,0.15)';
-  // store selected avatar on btn for retrieval
-  btn.closest('#setup-av-grid').dataset.selected = av;
+   btn.closest('#setup-av-grid').dataset.selected = av;
 }
 
 async function submitUsernameSetup(uid, email) {
@@ -411,9 +362,7 @@ async function submitUsernameSetup(uid, email) {
 }
 
 
-/* ════════════════════════════════════
-   AUTH TABS + EMAIL/PASSWORD
-════════════════════════════════════ */
+ 
 function switchAuthTab(tab, btn) {
   ['login','signup','guest'].forEach(t => {
     const el = document.getElementById('auth-tab-' + t);
@@ -462,9 +411,7 @@ async function signupWithEmail() {
   const email = (document.getElementById('signup-email')?.value || '').trim();
   const pass  = (document.getElementById('signup-password')?.value || '').trim();
   const btn   = document.getElementById('signup-btn');
-
-  // Validation
-  if (!name || name.length < 2)  { showToast('Enter your display name (min 2 chars)'); return; }
+   if (!name || name.length < 2)  { showToast('Enter your display name (min 2 chars)'); return; }
   if (!email)                     { showToast('Enter your email address'); return; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Enter a valid email address'); return; }
   if (!pass || pass.length < 6)  { showToast('Password must be at least 6 characters'); return; }
@@ -480,20 +427,16 @@ async function signupWithEmail() {
     const sbUser = await signUpWithEmail(email, pass, name, selAv);
 
     if (!sbUser) {
-      // Error already shown by signUpWithEmail
-      if (btn) { btn.textContent = 'Create Account →'; btn.disabled = false; }
+       if (btn) { btn.textContent = 'Create Account →'; btn.disabled = false; }
       return;
     }
-
-    // Supabase may require email confirmation (identities array empty = needs confirm)
-    const needsConfirm = !sbUser.confirmed_at &&
+     const needsConfirm = !sbUser.confirmed_at &&
                          !sbUser.email_confirmed_at &&
                          (!sbUser.identities || sbUser.identities.length === 0);
 
     if (needsConfirm) {
       if (btn) { btn.textContent = 'Create Account →'; btn.disabled = false; }
-      // Show confirmation message in the card
-      const card = document.getElementById('auth-tab-signup');
+       const card = document.getElementById('auth-tab-signup');
       if (card) {
         card.innerHTML = `
           <div style="text-align:center;padding:2rem 0">
@@ -513,9 +456,7 @@ async function signupWithEmail() {
       }
       return;
     }
-
-    // Email confirmation disabled — logged in immediately
-    user = { name, av: selAv, uid: sbUser.id, email: sbUser.email };
+     user = { name, av: selAv, uid: sbUser.id, email: sbUser.email };
     localStorage.setItem('e_user', JSON.stringify(user));
     showToast('✅ Welcome to Echoes, ' + name + '!');
     if (btn) { btn.textContent = 'Create Account →'; btn.disabled = false; }
@@ -564,60 +505,35 @@ function logout() {
   if (typeof SUPABASE_ENABLED !== 'undefined' && SUPABASE_ENABLED) {
     fbSignOut().catch(() => {});
   }
-
-  // Clear all local session data
-  localStorage.removeItem('e_user');
+   localStorage.removeItem('e_user');
   localStorage.removeItem('e_demo_seeded');
-
-  // Reset state
-  user = { name: 'Explorer', av: '🌙', uid: null };
+   user = { name: 'Explorer', av: '🌙', uid: null };
   fbRating = 0; fbYN = '';
   imgData = null; msgImgData = null;
   memLat = null; memLng = null;
   msgLatV = null; msgLngV = null;
-
-  // Hide app
-  const appEl = document.getElementById('app');
+   const appEl = document.getElementById('app');
   if (appEl) appEl.classList.add('hidden');
-
-  // Unlock body scroll
-  document.body.classList.remove('app-open');
-
-  // Show landing
-  const landing = document.getElementById('landing');
+   document.body.classList.remove('app-open');
+   const landing = document.getElementById('landing');
   if (landing) landing.style.display = '';
-
-  // Scroll to top
-  window.scrollTo(0, 0);
-
-  // Reset entry forms
-  const nameInp = document.getElementById('e-name');
+   window.scrollTo(0, 0);
+   const nameInp = document.getElementById('e-name');
   if (nameInp) nameInp.value = '';
   document.querySelectorAll('.av-btn').forEach(b => b.classList.remove('sel'));
   const firstAv = document.querySelector('.av-btn');
   if (firstAv) { firstAv.classList.add('sel'); selAv = firstAv.dataset.av || '🌙'; }
-
-  // Switch back to login tab
-  switchAuthTab('login', document.querySelector('.auth-tab'));
+   switchAuthTab('login', document.querySelector('.auth-tab'));
 }
 
-/* ════════════════════════════════════
-   APP LAUNCH
-════════════════════════════════════ */
+ 
 function launchApp() {
-  // Hide landing
-  const landing = document.getElementById('landing');
+   const landing = document.getElementById('landing');
   if (landing) landing.style.display = 'none';
-
-  // Show app
-  const appEl = document.getElementById('app');
+   const appEl = document.getElementById('app');
   if (appEl) appEl.classList.remove('hidden');
-
-  // Lock body scroll
-  document.body.classList.add('app-open');
-
-  // Let the DOM repaint before running JS that reads/writes elements
-  requestAnimationFrame(() => {
+   document.body.classList.add('app-open');
+   requestAnimationFrame(() => {
     updateUserUI();
     syncCloudData();
     renderStats();
@@ -642,9 +558,7 @@ function updateUserUI() {
   });
 }
 
-/* ════════════════════════════════════
-   NAVIGATION
-════════════════════════════════════ */
+ 
 function goSec(name, el) {
   document.querySelectorAll('.s').forEach(s => s.classList.remove('active'));
   const sec = document.getElementById('s-' + name);
@@ -657,15 +571,11 @@ function goSec(name, el) {
     const link = document.querySelector('[data-s="' + name + '"]');
     if (link) link.classList.add('active');
   }
-
-  // Close sidebar on mobile
-  const sb = document.getElementById('sidebar');
+   const sb = document.getElementById('sidebar');
   if (sb) sb.classList.remove('open');
   const ov = document.getElementById('sb-overlay');
   if (ov) ov.classList.add('hidden');
-
-  // Render section
-  const renders = {
+   const renders = {
     gallery: renderGallery,
     nearby:  renderNearby,
     places:  renderPlaces,
@@ -683,9 +593,7 @@ function toggleSB() {
   if (ov) ov.classList.toggle('hidden');
 }
 
-/* ════════════════════════════════════
-   STATS — all real from localStorage
-════════════════════════════════════ */
+ 
 function setText(id, val) {
   const el = document.getElementById(id);
   if (el) el.textContent = val;
@@ -696,9 +604,7 @@ function renderStats() {
   const msgs = getMsgs();
 
   setText('st-saved', mems.length);
-
-  // Count unique places from the current user's memories
-  const myMems = mems.filter(m =>
+   const myMems = mems.filter(m =>
     m.creatorUid === user.uid ||
     m.creator === user.name ||
     m.creator === user.name.toLowerCase()
@@ -717,9 +623,7 @@ function renderStats() {
 
   const totalReactions = mems.reduce((s, m) => s + (m.likes || 0), 0);
   setText('st-reactions', totalReactions);
-
-  // Badge: messages tagged to this user (match by uid or name)
-  const tagged = msgs.filter(m =>
+   const tagged = msgs.filter(m =>
     (m.taggedUid && m.taggedUid === user.uid) ||
     String(m.taggedPerson || '').toLowerCase() === String(user.name || '').toLowerCase()
   ).length;
@@ -730,9 +634,7 @@ function renderStats() {
   }
 }
 
-/* ════════════════════════════════════
-   TEASERS — real data driven
-════════════════════════════════════ */
+ 
 function renderTeasers() {
   const mems = getM();
   const msgs = getMsgs();
@@ -754,9 +656,7 @@ function renderTeasers() {
   const unlocked = mems.filter(m => !m.locked);
   if (unlocked.length > 0)
     items.push({ dot:'dp', text: unlocked.length + ' memor' + (unlocked.length===1?'y':'ies') + ' unlocked', sub:'You\'ve been to these places', act:'gallery', label:'View →' });
-
-  // Onboarding for new users
-  if (items.length === 0) {
+   if (items.length === 0) {
     items.push({ dot:'dr', text: 'Drop your first memory', sub:'Tap Add Memory to anchor a photo to a place', act:'add-memory', label:'Start →' });
     items.push({ dot:'dg', text: 'Explore public drops nearby', sub:'See what others have left around you', act:'nearby', label:'Explore →' });
   }
@@ -771,9 +671,7 @@ function renderTeasers() {
     </div>`).join('');
 }
 
-/* ════════════════════════════════════
-   ADD MEMORY
-════════════════════════════════════ */
+ 
 function onImg(e) {
   const f = e.target.files[0];
   if (!f) return;
@@ -885,9 +783,7 @@ async function saveMemory() {
   const cap = cleanText(document.getElementById('m-cap').value, 500);
   if (!cap) { showToast('✏️ Add a caption first'); return; }
   if (!memLat) { showToast('📍 Please fetch your location first'); return; }
-
-  // Get real Supabase uid if available, fall back to stored uid
-  let creatorUid = user.uid || 'local';
+   let creatorUid = user.uid || 'local';
   if (typeof getSessionUid === 'function') {
     const sessionUid = await getSessionUid();
     if (sessionUid) creatorUid = sessionUid;
@@ -922,9 +818,7 @@ async function saveMemory() {
     showToast('Cloud save failed. Not saved: ' + errToText(err), 4200);
     return;
   }
-
-  // Reset form
-  imgData = null; selFilter = 'original'; memLat = null; memLng = null;
+   imgData = null; selFilter = 'original'; memLat = null; memLng = null;
   document.getElementById('m-cap').value = '';
   const prev = document.getElementById('img-prev');
   if (prev) prev.classList.add('hidden');
@@ -938,9 +832,7 @@ async function saveMemory() {
   setTimeout(() => goSec('gallery'), 900);
 }
 
-/* ════════════════════════════════════
-   LEAVE MESSAGE
-════════════════════════════════════ */
+ 
 function pickMT(t, btn) {
   msgType = t;
   document.querySelectorAll('.mt').forEach(b => b.classList.remove('active'));
@@ -1023,9 +915,7 @@ async function saveMessage() {
     showToast('Cloud save failed. Message not saved: ' + errToText(err), 4200);
     return;
   }
-
-  // Reset
-  document.getElementById('mg-txt').value = '';
+   document.getElementById('mg-txt').value = '';
   document.getElementById('mg-tagged').value = '';
   msgImgData = null; msgLatV = null; msgLngV = null;
   const pi = document.getElementById('mg-img-prev');
@@ -1040,9 +930,7 @@ async function saveMessage() {
   setTimeout(() => goSec('inbox'), 900);
 }
 
-/* ════════════════════════════════════
-   UNLOCK NEARBY
-════════════════════════════════════ */
+ 
 function haversine(la1, lo1, la2, lo2) {
   const R = 6371000;
   const dL = (la2 - la1) * Math.PI / 180;
@@ -1125,9 +1013,7 @@ function renderUnlockList() {
     </div>`).join('');
 }
 
-/* ════════════════════════════════════
-   GALLERY
-════════════════════════════════════ */
+ 
 function filterGal(f, btn) {
   galFilter = f;
   document.querySelectorAll('.ftag[data-gf]').forEach(b => b.classList.remove('active'));
@@ -1165,9 +1051,7 @@ function renderGallery() {
     </div>`).join('');
 }
 
-/* ════════════════════════════════════
-   NEARBY
-════════════════════════════════════ */
+ 
 function filterNearby(t, btn) {
   nearbyFilter = t;
   document.querySelectorAll('.ftag[data-tg]').forEach(b => b.classList.remove('active'));
@@ -1175,7 +1059,7 @@ function filterNearby(t, btn) {
   renderNearby();
 }
 
-/* ─── NEARBY GPS STATE ─── */
+ 
 let _nearbyLat = null, _nearbyLng = null;
 let _nearbyIsReal = false;
 const NEARBY_RADIUS_M = 5000; // show items within 5km
@@ -1183,9 +1067,7 @@ const NEARBY_RADIUS_M = 5000; // show items within 5km
 function renderNearby() {
   const grid = document.getElementById('nearby-grid');
   if (!grid) return;
-
-  // Show loading while getting GPS
-  grid.innerHTML = '<div class="empty-state"><div class="ei">📍</div><p>Getting your location…</p></div>';
+   grid.innerHTML = '<div class="empty-state"><div class="ei">📍</div><p>Getting your location…</p></div>';
 
   const build = (lat, lng, isReal) => {
     _nearbyLat = lat; _nearbyLng = lng;
@@ -1197,20 +1079,14 @@ function renderNearby() {
       ...mems.map(m => ({...m, _k:'memory'})),
       ...msgs.map(m => ({...m, _k:'message'}))
     ];
-
-    // Calculate real distance for every item
-    all = all.map(item => ({
+     all = all.map(item => ({
       ...item,
       _dist: haversine(lat, lng, item.lat, item.lng)
     }));
-
-    // Filter by interest tag
-    if (nearbyFilter !== 'all') {
+     if (nearbyFilter !== 'all') {
       all = all.filter(i => (i.tag || i.category) === nearbyFilter);
     }
-
-    // Sort by real distance ascending
-    all.sort((a, b) => a._dist - b._dist);
+     all.sort((a, b) => a._dist - b._dist);
 
     if (!all.length) {
       grid.innerHTML = emptyState('◉', 'No drops match this interest.');
@@ -1227,8 +1103,7 @@ function renderNearby() {
       const distLabel = dist < 1000
         ? Math.round(dist) + 'm away'
         : (dist / 1000).toFixed(1) + 'km away';
-      // Nearby = within 100m (can unlock), close = within 500m
-      const isNearby  = dist <= 100;
+       const isNearby  = dist <= 100;
       const isClose   = dist <= 500;
       const cat     = item.tag || item.category || 'unknown';
       const preview = item.caption || item.text || 'A hidden memory…';
@@ -1284,7 +1159,7 @@ function renderNearby() {
   );
 }
 
-/* Try to unlock a specific nearby item */
+ 
 function tryUnlockItem(memId) {
   if (!_nearbyLat || !_nearbyIsReal) {
     showVpnUnlockWarning();
@@ -1306,13 +1181,10 @@ function tryUnlockItem(memId) {
   }
 }
 
-/* ════════════════════════════════════
-   INBOX
-════════════════════════════════════ */
+ 
 function renderInbox() {
   const msgs = getMsgs();
-  // Only show messages tagged to THIS user
-  const mine = msgs.filter(m => String(m.taggedPerson || '').toLowerCase() === String(user.name || '').toLowerCase());
+   const mine = msgs.filter(m => String(m.taggedPerson || '').toLowerCase() === String(user.name || '').toLowerCase());
   const pub  = msgs.filter(m => !m.taggedPerson && m.type !== 'public');
   const all  = [...mine, ...pub];
 
@@ -1354,17 +1226,13 @@ function renderInbox() {
   }).join('');
 }
 
-/* ════════════════════════════════════
-   PLACES
-════════════════════════════════════ */
+ 
 function renderPlaces() {
   const mems = getM();
   const msgs = getMsgs();
   const pins = document.getElementById('map-pins');
   if (pins) pins.innerHTML = '';
-
-  // Group by rounded coords
-  const placeMap = {};
+   const placeMap = {};
   mems.forEach(m => {
     const key = m.lat.toFixed(2) + ',' + m.lng.toFixed(2);
     if (!placeMap[key]) placeMap[key] = { lat:m.lat, lng:m.lng, memories:0, drops:0, tagged:0, label:'Memory location' };
@@ -1385,9 +1253,7 @@ function renderPlaces() {
     if (listEl) listEl.innerHTML = emptyState('📍', 'No places yet. Add a memory with GPS to see your locations here.');
     return;
   }
-
-  // Scatter pins
-  if (pins) {
+   if (pins) {
     places.forEach((p, i) => {
       const top  = 15 + ((i * 31) % 60);
       const left = 10 + ((i * 23) % 72);
@@ -1401,9 +1267,7 @@ function renderPlaces() {
   }
 
   const icons = ['📍','🏠','☕','🌅','🍜','🎓','🎭','🌿','📸','🗺️','🌊','🔥'];
-
-  // Geocode any places without a name, update display when resolved
-  places.forEach(p => {
+   places.forEach(p => {
     if (!p.locationName) {
       reverseGeocode(p.lat, p.lng).then(name => {
         p.locationName = name;
@@ -1432,9 +1296,7 @@ function renderPlaces() {
   }
 }
 
-/* ════════════════════════════════════
-   MEMORY DETAIL MODAL
-════════════════════════════════════ */
+ 
 function openDetail(id) {
   const mems = getM();
   const msgs = getMsgs();
@@ -1467,8 +1329,7 @@ function openDetail(id) {
   if (likes) likes.textContent = item.likes || 0;
 
   renderComments(item.comments || []);
-  // Add share button to modal
-  const existingShare = document.getElementById('detail-share-btn');
+   const existingShare = document.getElementById('detail-share-btn');
   if (existingShare) existingShare.remove();
   const shareBtn = document.createElement('button');
   shareBtn.id = 'detail-share-btn';
@@ -1509,8 +1370,7 @@ function renderComments(comments) {
 
 async function likeIt() {
   if (!curDetailId) return;
-  // Update locally immediately
-  const mems = getM();
+   const mems = getM();
   const m = mems.find(x => x.id === curDetailId);
   if (!m) return;
   m.likes = (m.likes || 0) + 1;
@@ -1519,8 +1379,7 @@ async function likeIt() {
   if (el) el.textContent = m.likes;
   renderStats();
   showToast('❤️ Liked!');
-  // Sync to Supabase silently
-  dbLikeMemory(curDetailId).catch(e => console.warn('Like sync:', e));
+   dbLikeMemory(curDetailId).catch(e => console.warn('Like sync:', e));
 }
 
 function emojiReact(emoji) {
@@ -1536,8 +1395,7 @@ async function postComment() {
   if (!inp || !curDetailId) return;
   const txt = cleanText(inp.value, 300);
   if (!txt) return;
-  // Save locally immediately
-  const mems = getM();
+   const mems = getM();
   const m = mems.find(x => x.id === curDetailId);
   if (m) {
     m.comments = m.comments || [];
@@ -1547,14 +1405,11 @@ async function postComment() {
   }
   inp.value = '';
   showToast('💬 Comment posted!');
-  // Sync silently
-  dbAddComment(curDetailId, txt, user.uid || 'local', user.name)
+   dbAddComment(curDetailId, txt, user.uid || 'local', user.name)
     .catch(e => console.warn('Comment sync:', e));
 }
 
-/* ════════════════════════════════════
-   UNLOCK MODAL
-════════════════════════════════════ */
+ 
 function showUnlockModal(mem) {
   const img = document.getElementById('um-img');
   if (mem.image) {
@@ -1574,9 +1429,7 @@ function showUnlockModal(mem) {
   document.getElementById('modal-unlock').classList.remove('hidden');
 }
 
-/* ════════════════════════════════════
-   FEEDBACK
-════════════════════════════════════ */
+ 
 function setRat(v) {
   fbRating = v;
   document.querySelectorAll('.rb').forEach(b =>
@@ -1657,9 +1510,7 @@ async function renderFBPrev() {
 }
 
 
-/* ════════════════════════════════════
-   SHARING — WhatsApp, Instagram, Contacts, Web Share
-════════════════════════════════════ */
+ 
 
 function shareMemory(memId, sender, locationName) {
   const mems = getM();
@@ -1686,14 +1537,11 @@ function shareTaggedMessage(sender, locName, deepLink) {
 }
 
 function showShareModal(data, url) {
-  // Use native Web Share API on mobile
-  if (navigator.share && /mobile|android|iphone/i.test(navigator.userAgent)) {
+   if (navigator.share && /mobile|android|iphone/i.test(navigator.userAgent)) {
     navigator.share(data).catch(() => {});
     return;
   }
-
-  // Desktop / fallback — show share sheet modal
-  const existing = document.getElementById('share-modal');
+   const existing = document.getElementById('share-modal');
   if (existing) existing.remove();
 
   const waText  = encodeURIComponent(data.text + '\n' + url);
@@ -1754,10 +1602,7 @@ function copyLink(url) {
   });
 }
 
-/* ════════════════════════════════════
-   DEEP LINK HANDLER
-   If URL has ?memory=ID open that memory on load
-════════════════════════════════════ */
+ 
 function handleDeepLink() {
   const params = new URLSearchParams(window.location.search);
   const memId  = params.get('memory');
@@ -1765,25 +1610,20 @@ function handleDeepLink() {
   const invite = params.get('invite'); // tagged message invite
 
   if (memId) {
-    // Wait for app to load then open the memory
-    setTimeout(() => {
+     setTimeout(() => {
       goSec('nearby');
       openDetail(memId);
     }, 600);
   }
   if (invite) {
-    // Someone was tagged — show them the locked message with location hint
-    setTimeout(() => {
+     setTimeout(() => {
       goSec('inbox');
       showToast('📍 Someone left a message for you — visit the location to unlock it!');
     }, 600);
   }
 }
 
-/* ════════════════════════════════════
-   TAGGED PERSON INVITE (no account needed)
-   Generate a link they can click to join and see their message
-════════════════════════════════════ */
+ 
 function inviteTaggedPerson(msgId, taggedName, locationName) {
   if (!taggedName || !locationName) {
     const msg = getMsgs().find(m => m.id === msgId);
@@ -1799,9 +1639,7 @@ function inviteTaggedPerson(msgId, taggedName, locationName) {
   showShareModal({ title: 'You have a secret message waiting', text, url }, url);
 }
 
-/* ════════════════════════════════════
-   MODALS
-════════════════════════════════════ */
+ 
 function closeModal(id) {
   const el = document.getElementById(id);
   if (el) el.classList.add('hidden');
@@ -1815,9 +1653,7 @@ document.addEventListener('click', e => {
   }
 });
 
-/* ════════════════════════════════════
-   TOAST
-════════════════════════════════════ */
+ 
 function showToast(msg, dur = 2600) {
   const el = document.getElementById('toast');
   if (!el) return;
@@ -1850,12 +1686,9 @@ async function syncCloudData() {
       uid && isCloudId(uid) ? dbGetMyMemories(uid) : Promise.resolve([]),
       uid && isCloudId(uid) ? dbGetMessagesForUser(uid) : Promise.resolve([])
     ]);
-
-    // Merge: cloud UUIDs only — don't mix with local_* guest IDs
-    const mergedMemsMap = new Map();
+     const mergedMemsMap = new Map();
     [...publicMems, ...myMems].forEach(m => { if (m?.id) mergedMemsMap.set(m.id, m); });
-    // Keep local-only memories (guest drops not yet synced)
-    getM().filter(m => !isCloudId(m?.id)).forEach(m => { if (m?.id) mergedMemsMap.set(m.id, m); });
+     getM().filter(m => !isCloudId(m?.id)).forEach(m => { if (m?.id) mergedMemsMap.set(m.id, m); });
     saveM(Array.from(mergedMemsMap.values()));
 
     const mergedMsgsMap = new Map();
@@ -1883,9 +1716,7 @@ function isCloudId(id) {
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
 }
 
-/* ════════════════════════════════════
-   HELPERS
-════════════════════════════════════ */
+ 
 function tagEmoji(t) {
   const map = { nostalgia:'🕰️', food:'🍜', travel:'✈️', photography:'📸', friendship:'👥', hidden:'📝' };
   return map[t] || '✨';
@@ -1901,20 +1732,14 @@ function emptyState(icon, msg) {
   return `<div class="empty-state"><div class="ei">${icon}</div><p>${msg}</p></div>`;
 }
 
-/* ════════════════════════════════════
-   DIRECT MESSAGES / CHAT
-   Instagram-style DM between users
-   Each conversation = memoryId or userId pair
-════════════════════════════════════ */
+ 
 
 let _activeChatId   = null;
 let _chatUnsub      = null;
 
 function openChat(withUid, withName, withAv, contextMemId) {
   _activeChatId = [user.uid || 'local', withUid].sort().join('_');
-
-  // Show chat modal
-  const existing = document.getElementById('chat-modal');
+   const existing = document.getElementById('chat-modal');
   if (existing) existing.remove();
 
   const modal = document.createElement('div');
@@ -1985,18 +1810,13 @@ function sendChatMsg(toUid, toName, toAv) {
     text,
     ts:        Date.now()
   };
-
-  // Store in localStorage (Supabase chat table when enabled)
-  const existing = _lgetChat(_activeChatId);
+   const existing = _lgetChat(_activeChatId);
   existing.push(msg);
   localStorage.setItem('e_chat_' + _activeChatId, JSON.stringify(existing));
 
   inp.value = '';
   renderChatMessages(existing);
-
-  // TODO: when Supabase enabled, save to 'direct_messages' table
-  // and use real-time subscription for live updates
-}
+ }
 
 function _lgetChat(chatId) {
   try { return JSON.parse(localStorage.getItem('e_chat_' + chatId) || '[]'); }

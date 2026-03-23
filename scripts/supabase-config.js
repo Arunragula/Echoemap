@@ -1,7 +1,4 @@
-/* ═══════════════════════════════════════════════
-   supabase-config.js — Echoes Backend (Production)
-   All DB operations, auth, storage
-═══════════════════════════════════════════════ */
+ 
 
 const SUPABASE_URL      = 'https://rtusvxxwfkyuxvdhzjwq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0dXN2eHh3Zmt5dXh2ZGh6andxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3Mjg5OTEsImV4cCI6MjA4OTMwNDk5MX0.sxC3aI_miRnYiG8-JLQEH9K8-0Izd3QqklDvh43w5hg';
@@ -27,7 +24,7 @@ async function initSupabase() {
 
 const sb = () => _supabase || window.SB;
 
-/* ─── ALWAYS GET FRESH UID ─── */
+ 
 async function _getUid() {
   if (!sb()) return null;
   const { data: { session } } = await sb().auth.getSession();
@@ -37,9 +34,7 @@ async function _getUid() {
   return null;
 }
 
-/* ═══════════════════════════════════════════════
-   AUTH
-═══════════════════════════════════════════════ */
+ 
 
 async function signInWithGoogle() {
   if (!SUPABASE_ENABLED || !sb()) { showToast('Supabase not connected'); return null; }
@@ -56,9 +51,7 @@ async function signInWithGoogle() {
 
 async function signUpWithEmail(email, password, name, avatar) {
   if (!SUPABASE_ENABLED || !sb()) return null;
-
-  // First check if Supabase is reachable
-  if (!_sbReady) { showToast('Backend not ready. Refresh and try again.'); return null; }
+   if (!_sbReady) { showToast('Backend not ready. Refresh and try again.'); return null; }
 
   const { data, error } = await sb().auth.signUp({
     email,
@@ -73,8 +66,7 @@ async function signUpWithEmail(email, password, name, avatar) {
   });
 
   if (error) {
-    // 422 = email already registered or invalid
-    const msg = error.message || '';
+     const msg = error.message || '';
     if (msg.includes('already registered') || msg.includes('already exists') || error.status === 422) {
       showToast('This email is already registered. Try logging in instead.');
     } else if (msg.includes('Password')) {
@@ -86,9 +78,7 @@ async function signUpWithEmail(email, password, name, avatar) {
     }
     return null;
   }
-
-  // data.user exists but may not be confirmed yet (email confirmation enabled)
-  if (data?.user) {
+   if (data?.user) {
     await upsertUserProfile(data.user, name, avatar, name);
   }
 
@@ -155,22 +145,18 @@ async function fbSignOut() {
   if (sb()) await sb().auth.signOut();
 }
 
-/* ─── CHECK IF USER NEEDS USERNAME SETUP ─────────
-   Returns true if profile exists with a non-generic username
-─────────────────────────────────────────────── */
+ 
 async function userNeedsUsernameSetup(sbUser) {
   if (!sb() || !sbUser?.id) return false;
-  // Check if user has a real username in the users table
-  const { data } = await sb().from('users').select('username, name').eq('auth_uid', sbUser.id).single();
+   const { data } = await sb().from('users').select('username, name').eq('auth_uid', sbUser.id).single();
   if (!data) return true; // no profile yet
-  // If username is just the email prefix or 'Explorer', they need setup
-  const emailPrefix = (sbUser.email || '').split('@')[0];
+   const emailPrefix = (sbUser.email || '').split('@')[0];
   const name = data.username || data.name || '';
   if (!name || name === 'Explorer' || name === emailPrefix) return true;
   return false;
 }
 
-/* ─── USERS TABLE ─────────────────────────────── */
+ 
 async function upsertUserProfile(sbUser, name, avatar, username) {
   if (!sb() || !sbUser?.id) return;
   try {
@@ -199,15 +185,12 @@ async function updateUsername(uid, username, avatar) {
       last_seen: new Date().toISOString()
     }).eq('auth_uid', uid);
     if (error) throw error;
-    // Also update auth metadata
-    await sb().auth.updateUser({ data: { full_name: username, username, avatar } });
+     await sb().auth.updateUser({ data: { full_name: username, username, avatar } });
     return true;
   } catch (e) { console.warn('updateUsername failed:', e.message); return false; }
 }
 
-/* ═══════════════════════════════════════════════
-   MEMORIES
-═══════════════════════════════════════════════ */
+ 
 async function dbSaveMemory(data) {
   if (!SUPABASE_ENABLED || !sb()) return data.id;
   const uid = await _getUid();
@@ -264,7 +247,7 @@ async function dbUnlockMemory(memId) {
   await sb().from('memories').update({ locked: false }).eq('id', memId);
 }
 
-/* ─── LIKES + REACTIONS ─────────────────────────── */
+ 
 async function dbLikeMemory(memId) {
   if (!SUPABASE_ENABLED || !sb() || !_isUuid(memId)) return;
   const uid = await _getUid();
@@ -275,8 +258,7 @@ async function dbLikeMemory(memId) {
       emoji:     'heart'
     }, { onConflict: 'memory_id,uid,emoji', ignoreDuplicates: true });
   } catch (e) { console.warn('Reaction upsert failed:', e.message); }
-  // Increment likes count
-  const { data: mem } = await sb().from('memories').select('likes').eq('id', memId).single();
+   const { data: mem } = await sb().from('memories').select('likes').eq('id', memId).single();
   if (mem) {
     await sb().from('memories').update({ likes: (mem.likes || 0) + 1 }).eq('id', memId);
   }
@@ -294,9 +276,7 @@ async function dbEmojiReact(memId, emoji) {
   } catch (e) { console.warn('Emoji react failed:', e.message); }
 }
 
-/* ═══════════════════════════════════════════════
-   MESSAGES
-═══════════════════════════════════════════════ */
+ 
 async function dbSaveMessage(data) {
   if (!SUPABASE_ENABLED || !sb()) return data.id;
   const uid = await _getUid();
@@ -340,9 +320,7 @@ async function dbGetPublicMessages(count = 50) {
   return (data || []).map(_msgf);
 }
 
-/* ═══════════════════════════════════════════════
-   COMMENTS
-═══════════════════════════════════════════════ */
+ 
 async function dbAddComment(memId, text, uid, name) {
   if (!SUPABASE_ENABLED || !sb() || !_isUuid(memId)) return { synced: false };
   const sessionUid = await _getUid();
@@ -372,9 +350,7 @@ async function dbGetComments(memId) {
   }));
 }
 
-/* ═══════════════════════════════════════════════
-   FEEDBACK
-═══════════════════════════════════════════════ */
+ 
 async function dbSaveFeedback(data) {
   if (!SUPABASE_ENABLED || !sb()) return;
   const uid = await _getUid();
@@ -398,9 +374,7 @@ async function dbGetFeedbackForUser() {
   return data || [];
 }
 
-/* ═══════════════════════════════════════════════
-   REAL-TIME NEARBY
-═══════════════════════════════════════════════ */
+ 
 let _nearbyChannel = null;
 
 function dbListenNearby(onUpdate, count = 30) {
@@ -427,9 +401,7 @@ function dbStopNearby() {
   if (_nearbyChannel) { _nearbyChannel.unsubscribe(); _nearbyChannel = null; }
 }
 
-/* ═══════════════════════════════════════════════
-   ADMIN
-═══════════════════════════════════════════════ */
+ 
 async function dbGetAllFeedback() {
   if (!SUPABASE_ENABLED || !sb()) return [];
   const { data } = await sb().from('feedback').select('*').order('created_at', { ascending: false });
@@ -483,9 +455,7 @@ async function dbBanUser(authUid) {
   await sb().from('users').update({ banned: true }).eq('auth_uid', authUid);
 }
 
-/* ═══════════════════════════════════════════════
-   FIELD CONVERTERS  (DB snake_case → app camelCase)
-═══════════════════════════════════════════════ */
+ 
 function _mf(r) {
   return {
     id:           r.id,
@@ -528,9 +498,7 @@ function _msgf(r) {
   };
 }
 
-/* ═══════════════════════════════════════════════
-   localStorage HELPERS
-═══════════════════════════════════════════════ */
+ 
 function _lg(k) {
   try { return JSON.parse(localStorage.getItem(k) || '[]'); }
   catch { return []; }
@@ -541,8 +509,6 @@ function _isUuid(v) {
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
 }
 
-/* ═══════════════════════════════════════════════
-   COMPATIBILITY ALIASES
-═══════════════════════════════════════════════ */
+ 
 const FIREBASE_ENABLED = SUPABASE_ENABLED;
 const initFirebase     = initSupabase;

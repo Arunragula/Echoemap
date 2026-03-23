@@ -1,4 +1,4 @@
-/* Echoes Service Worker v2.0 — Production */
+ 
 const CACHE_NAME = 'echoes-v2';
 
 const SHELL = ['/', '/index.html'];
@@ -22,18 +22,12 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const req = e.request;
   const url = new URL(req.url);
-
-  // CRITICAL: Never intercept non-GET requests (POST = auth signup/login)
-  if (req.method !== 'GET') return;
-
-  // Never cache Supabase API calls
-  if (url.hostname.includes('supabase.co')) {
+   if (req.method !== 'GET') return;
+   if (url.hostname.includes('supabase.co')) {
     e.respondWith(fetch(req).catch(() => new Response('{"error":"offline"}', { status: 503, headers: { 'Content-Type': 'application/json' }})));
     return;
   }
-
-  // Skip external CDNs entirely
-  if (!url.hostname.includes(self.location.hostname) &&
+   if (!url.hostname.includes(self.location.hostname) &&
       (url.hostname.includes('googleapis.com') ||
        url.hostname.includes('gstatic.com') ||
        url.hostname.includes('jsdelivr.net') ||
@@ -42,12 +36,8 @@ self.addEventListener('fetch', e => {
     e.respondWith(fetch(req).catch(() => new Response('', { status: 503 })));
     return;
   }
-
-  // Non-http(s) schemes — skip
-  if (!url.protocol.startsWith('http')) return;
-
-  // Network-first for HTML documents (always fresh)
-  if (req.destination === 'document') {
+   if (!url.protocol.startsWith('http')) return;
+   if (req.destination === 'document') {
     e.respondWith(
       fetch(req)
         .then(res => {
@@ -58,15 +48,12 @@ self.addEventListener('fetch', e => {
     );
     return;
   }
-
-  // Cache-first for same-origin assets (JS, CSS, images)
-  if (url.origin === self.location.origin) {
+   if (url.origin === self.location.origin) {
     e.respondWith(
       caches.match(req).then(cached => {
         if (cached) return cached;
         return fetch(req).then(res => {
-          // Only cache successful same-origin GETs
-          if (res.ok && res.status < 300) {
+           if (res.ok && res.status < 300) {
             caches.open(CACHE_NAME).then(c => c.put(req, res.clone()));
           }
           return res;

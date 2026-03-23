@@ -1,18 +1,15 @@
-/* ═══════════════════════════════════════════════
-   footer.css — Echoes Landing Footer
-   Imported after style.css
-═══════════════════════════════════════════════ */
+ 
 
 .ef-wrap {
   position: relative;
   z-index: 3;
   width: 100%;
-  /* Solid dark background — no transparency so scrolled content doesn't bleed */
+   
   background: #060609;
   border-top: 1px solid rgba(200,169,110,0.12);
 }
 
-/* SVG wave divider above footer */
+ 
 .ef-divider {
   width: 100%;
   line-height: 0;
@@ -25,14 +22,14 @@
   height: 60px;
 }
 
-/* ── Footer body ── */
+ 
 .ef-body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 4rem 0;
 }
 
-/* ── Top row: brand + nav ── */
+ 
 .ef-top-row {
   display: grid;
   grid-template-columns: 320px 1fr;
@@ -41,7 +38,7 @@
   border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
-/* Brand */
+ 
 .ef-logo-row {
   display: flex;
   align-items: center;
@@ -79,7 +76,7 @@
   margin-bottom: 1.4rem;
 }
 
-/* Stats strip */
+ 
 .ef-stats {
   display: flex;
   align-items: center;
@@ -115,7 +112,7 @@
   background: rgba(255,255,255,0.07);
 }
 
-/* Social icons */
+ 
 .ef-socials {
   display: flex;
   gap: 0.45rem;
@@ -140,7 +137,7 @@
   transform: translateY(-2px);
 }
 
-/* Nav columns */
+ 
 .ef-nav-cols {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -171,7 +168,7 @@
   color: #ede9e0;
 }
 
-/* ── CTA Strip ── */
+ 
 .ef-cta-strip {
   display: flex;
   align-items: center;
@@ -219,7 +216,7 @@
   box-shadow: 0 6px 20px rgba(200,169,110,0.28);
 }
 
-/* ── Bottom bar ── */
+ 
 .ef-bottom {
   display: flex;
   align-items: center;
@@ -285,9 +282,7 @@
   font-family: 'DM Mono', monospace;
 }
 
-/* ═══════════════════════════════
-   RESPONSIVE
-═══════════════════════════════ */
+ 
 @media (max-width: 1024px) {
   .ef-body { padding: 0 2.5rem 0; }
   .ef-top-row {
