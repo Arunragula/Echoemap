@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Echoes Admin â€” Dashboard</title>
+  <title>Echoes Admin — Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&family=Syne:wght@600;700&display=swap" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -18,22 +18,28 @@
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
 
-  /* â”€ LOGIN â”€ */
-  #admin-login{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;}
-  .login-box{background:var(--bg2);border:1px solid var(--cb);border-radius:20px;padding:2.5rem;width:100%;max-width:380px;text-align:center;}
+  /* ─ LOGIN ─ */
+  #admin-login{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;padding:1rem;}
+  .login-box{background:var(--bg2);border:1px solid var(--cb);border-radius:20px;padding:2.5rem 2rem;width:100%;max-width:400px;text-align:center;box-sizing:border-box;}
   .login-logo{font-family:'Syne',sans-serif;font-size:1.4rem;color:var(--gold);margin-bottom:.4rem;}
-  .login-sub{font-size:.83rem;color:var(--muted);margin-bottom:2rem;}
-  .login-box input{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--cb);border-radius:10px;padding:.8rem 1rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;margin-bottom:.85rem;transition:border-color var(--tr);}
+  .login-sub{font-size:.83rem;color:var(--muted);margin-bottom:1.75rem;line-height:1.5;}
+  .login-box input{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--cb);border-radius:10px;padding:.8rem 1rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;margin-bottom:.75rem;transition:border-color var(--tr);box-sizing:border-box;display:block;}
   .login-box input:focus{border-color:var(--gold);}
   .login-box input::placeholder{color:var(--dim);}
-  .btn-login{width:100%;background:var(--gold);border:none;border-radius:10px;padding:.85rem;color:var(--bg);font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:all var(--tr);}
+  .btn-login{width:100%;background:var(--gold);border:none;border-radius:10px;padding:.85rem 1rem;color:var(--bg);font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:all var(--tr);display:block;box-sizing:border-box;}
   .btn-login:hover{background:var(--gold2);transform:translateY(-1px);}
+  .btn-login:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+  .btn-google{width:100%;background:rgba(255,255,255,.06);border:1px solid var(--cb);border-radius:10px;padding:.8rem 1rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:500;cursor:pointer;transition:all var(--tr);display:flex;align-items:center;justify-content:center;gap:.65rem;margin-bottom:.75rem;box-sizing:border-box;}
+  .btn-google:hover{background:rgba(255,255,255,.1);border-color:var(--cbh);}
+  .login-divider{display:flex;align-items:center;gap:.75rem;margin:.25rem 0 .75rem;color:var(--dim);font-size:.75rem;}
+  .login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--cb);}
   .login-hint{font-size:.75rem;color:var(--dim);margin-top:.9rem;font-family:'DM Mono',monospace;}
+  #login-error{color:#e06b6b;font-size:.78rem;margin-top:.75rem;display:none;text-align:center;padding:.5rem;background:rgba(224,107,107,.08);border-radius:8px;border:1px solid rgba(224,107,107,.2);}
 
-  /* â”€ APP SHELL â”€ */
+  /* ─ APP SHELL ─ */
   #admin-app{display:flex;height:100vh;overflow:hidden;}
 
-  /* â”€ SIDEBAR â”€ */
+  /* ─ SIDEBAR ─ */
   .asb{width:var(--sb);min-width:var(--sb);background:var(--bg2);border-right:1px solid var(--cb);display:flex;flex-direction:column;padding:1.25rem .9rem;overflow-y:auto;}
   .asb-logo{display:flex;align-items:center;gap:.5rem;font-family:'Syne',sans-serif;font-size:1.1rem;color:var(--gold);margin-bottom:1.75rem;padding:.3rem .5rem;}
   .asb-logo span{font-size:1.3rem;}
@@ -51,12 +57,12 @@
   .btn-signout{width:100%;background:none;border:1px solid var(--cb);border-radius:8px;color:var(--muted);padding:.55rem;cursor:pointer;font-size:.78rem;transition:all var(--tr);margin-top:.5rem;}
   .btn-signout:hover{border-color:var(--red);color:var(--red);}
 
-  /* â”€ MAIN â”€ */
+  /* ─ MAIN ─ */
   .amain{flex:1;overflow-y:auto;padding:2rem;scrollbar-width:thin;scrollbar-color:var(--cb) transparent;}
   .amain::-webkit-scrollbar{width:4px;}
   .amain::-webkit-scrollbar-thumb{background:var(--cb);border-radius:2px;}
 
-  /* â”€ SECTIONS â”€ */
+  /* ─ SECTIONS ─ */
   .asec{display:none;max-width:1100px;}
   .asec.active{display:block;}
 
@@ -172,12 +178,55 @@
 <!-- LOGIN -->
 <div id="admin-login">
   <div class="login-box">
-    <div class="login-logo">â—Ž Echoes Admin</div>
-    <div class="login-sub">Internal dashboard â€” authorised access only</div>
-    <input type="text" id="login-user" placeholder="Admin username" autocomplete="username"/>
-    <input type="password" id="login-pass" placeholder="Password" autocomplete="current-password"/>
-    <button class="btn-login" onclick="adminLogin()">Sign In â†’</button>
-    <div class="login-hint">Use your admin credentials</div>
+    <div class="login-logo">◎ Echoes Admin</div>
+    <div class="login-sub">Internal dashboard — authorised access only</div>
+
+    <!-- Google OAuth — one click, no password needed -->
+    <button class="btn-google" id="btn-google" onclick="adminLoginGoogle()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </svg>
+      Continue with Google
+    </button>
+
+    <div class="login-divider">or email</div>
+
+    <!-- Step 1: enter email -->
+    <div id="login-step-email">
+      <input type="email" id="login-user" placeholder="Your admin email" autocomplete="email"
+        onkeydown="if(event.key==='Enter')sendMagicLink()"/>
+      <button class="btn-login" id="btn-magic" onclick="sendMagicLink()">
+        Send Magic Link →
+      </button>
+      <div class="login-divider">or sign in with password</div>
+      <input type="password" id="login-pass" placeholder="Password (if you set one)"
+        autocomplete="current-password"
+        onkeydown="if(event.key==='Enter')adminLogin()"/>
+      <button class="btn-login" id="admin-login-btn"
+        style="background:rgba(255,255,255,.07);color:var(--text);border:1px solid var(--cb);margin-top:-.25rem"
+        onclick="adminLogin()">
+        Sign In with Password →
+      </button>
+    </div>
+
+    <!-- Step 2: magic link sent confirmation -->
+    <div id="login-step-sent" style="display:none;padding:.5rem 0">
+      <div style="font-size:2rem;margin-bottom:.75rem">📬</div>
+      <p style="font-size:.9rem;color:var(--text);font-weight:500;margin-bottom:.5rem">Check your email</p>
+      <p style="font-size:.82rem;color:var(--muted);line-height:1.6;margin-bottom:1.25rem">
+        We sent a login link to<br>
+        <strong id="sent-email-display" style="color:var(--gold)"></strong><br><br>
+        Click the link in the email — it logs you straight into the admin panel.
+      </p>
+      <button class="btn-login" style="background:transparent;border:1px solid var(--cb);color:var(--muted)"
+        onclick="resetLoginForm()">← Use a different email</button>
+    </div>
+
+    <div class="login-hint">Use the email linked to your Supabase account</div>
+    <div id="login-error"></div>
   </div>
 </div>
 
@@ -186,20 +235,20 @@
 
   <!-- SIDEBAR -->
   <nav class="asb">
-    <div class="asb-logo"><span>â—Ž</span>Echoes Admin</div>
+    <div class="asb-logo"><span>◎</span>Echoes Admin</div>
     <div class="asb-section">Overview</div>
-    <button class="anl active" data-p="overview" onclick="adminNav('overview',this)"><i>âŒ‚</i>Dashboard</button>
-    <button class="anl" data-p="users" onclick="adminNav('users',this)"><i>ðŸ‘¥</i>Users</button>
+    <button class="anl active" data-p="overview" onclick="adminNav('overview',this)"><i>⌂</i>Dashboard</button>
+    <button class="anl" data-p="users" onclick="adminNav('users',this)"><i>👥</i>Users</button>
     <button class="anl" data-p="locations" onclick="adminNav('locations',this)"><i>ðŸ“</i>Location Map</button>
     <div class="asb-section">Content</div>
-    <button class="anl" data-p="memories" onclick="adminNav('memories',this)"><i>ðŸ§ </i>Memories</button>
-    <button class="anl" data-p="moderation" onclick="adminNav('moderation',this)"><i>ðŸ›¡</i>Moderation<span class="badge">3</span></button>
+    <button class="anl" data-p="memories" onclick="adminNav('memories',this)"><i>🧠</i>Memories</button>
+    <button class="anl" data-p="moderation" onclick="adminNav('moderation',this)"><i>🛡</i>Moderation<span class="badge">3</span></button>
     <div class="asb-section">Feedback</div>
-    <button class="anl" data-p="feedback" onclick="adminNav('feedback',this)"><i>ðŸ’¬</i>Feedback</button>
-    <button class="anl" data-p="analytics" onclick="adminNav('analytics',this)"><i>ðŸ“Š</i>Analytics</button>
+    <button class="anl" data-p="feedback" onclick="adminNav('feedback',this)"><i>💬</i>Feedback</button>
+    <button class="anl" data-p="analytics" onclick="adminNav('analytics',this)"><i>📊</i>Analytics</button>
     <div class="asb-bottom">
       <div class="admin-user-row">
-        <div class="admin-av">ðŸ‘¤</div>
+        <div class="admin-av">👤</div>
         <div><div class="admin-info-name">Admin</div><div class="admin-info-role">Super Admin</div></div>
       </div>
       <button class="btn-signout" onclick="adminLogout()">Sign Out</button>
@@ -209,13 +258,13 @@
   <!-- MAIN -->
   <main class="amain">
 
-    <!-- â”€â”€ OVERVIEW â”€â”€ -->
+    <!-- ── OVERVIEW ── -->
     <section id="p-overview" class="asec active">
       <div class="topbar">
         <div><div class="page-title">Dashboard Overview</div><div class="page-sub">Live operational overview</div></div>
         <div class="topbar-right">
           <span class="live-badge"><span class="status-dot"></span>Live</span>
-          <button class="refresh-btn" onclick="aToast('âœ… Refreshed!')">â†» Refresh</button>
+          <button class="refresh-btn" onclick="refreshAdmin()">↻ Refresh</button>
         </div>
       </div>
 
@@ -225,12 +274,12 @@
         <div class="kpi"><div class="kpi-label">Memories Saved</div><div class="kpi-num" style="color:var(--gold)" id="kpi-mem-count">0</div><div class="kpi-change neu">Live from app data</div><div class="kpi-accent" style="background:var(--gold)"></div></div>
         <div class="kpi"><div class="kpi-label">Unlocked</div><div class="kpi-num" style="color:var(--purple)" id="kpi-unlock-count">0</div><div class="kpi-change neu">Live from app data</div><div class="kpi-accent" style="background:var(--purple)"></div></div>
         <div class="kpi"><div class="kpi-label">Public Drops</div><div class="kpi-num" style="color:#5eb8a0" id="kpi-drops-count">0</div><div class="kpi-change neu">Live from app data</div><div class="kpi-accent" style="background:#5eb8a0"></div></div>
-        <div class="kpi"><div class="kpi-label">Feedback Responses <span style="font-size:.6rem;color:var(--green)">âœ“ real</span></div><div class="kpi-num" style="color:var(--gold)"><span id="kpi-fb-count">0</span></div><div class="kpi-change neu">Live from user app</div><div class="kpi-accent" style="background:var(--gold)"></div></div>
+        <div class="kpi"><div class="kpi-label">Feedback Responses <span style="font-size:.6rem;color:var(--green)">✓ real</span></div><div class="kpi-num" style="color:var(--gold)"><span id="kpi-fb-count">0</span></div><div class="kpi-change neu">Live from user app</div><div class="kpi-accent" style="background:var(--gold)"></div></div>
       </div>
 
       <div class="chart-grid">
         <div class="chart-card">
-          <div class="chart-title">User signups â€” last 7 days</div>
+          <div class="chart-title">User signups — last 7 days</div>
           <div class="chart-sub">New registrations per day</div>
           <div class="chart-wrap" style="height:200px"><canvas id="chart-signups"></canvas></div>
         </div>
@@ -243,7 +292,7 @@
 
       <div class="chart-grid" style="grid-template-columns:1fr 1fr">
         <div class="chart-card">
-          <div class="chart-title">Unlock events â€” last 14 days</div>
+          <div class="chart-title">Unlock events — last 14 days</div>
           <div class="chart-sub">How many memories unlocked daily</div>
           <div class="chart-wrap" style="height:160px"><canvas id="chart-unlocks"></canvas></div>
         </div>
@@ -255,7 +304,7 @@
       </div>
     </section>
 
-    <!-- â”€â”€ USERS â”€â”€ -->
+    <!-- ── USERS ── -->
     <section id="p-users" class="asec">
       <div class="topbar"><div><div class="page-title">User Management</div><div class="page-sub">User activity and moderation actions</div></div></div>
       <div class="sec-card">
@@ -269,14 +318,14 @@
       </div>
     </section>
 
-    <!-- â”€â”€ LOCATION MAP â”€â”€ -->
+    <!-- ── LOCATION MAP ── -->
     <section id="p-locations" class="asec">
       <div class="topbar"><div><div class="page-title">Location Map</div><div class="page-sub">User activity and memory drop density by city</div></div></div>
       <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
         <div class="kpi"><div class="kpi-label">Cities Active</div><div class="kpi-num" style="color:var(--gold)">7</div><div class="kpi-change neu">India regions</div></div>
-        <div class="kpi"><div class="kpi-label">Top City</div><div class="kpi-num" style="color:var(--green);font-size:1.3rem">Pune</div><div class="kpi-change up">â†‘ 423 users</div></div>
-        <div class="kpi"><div class="kpi-label">Drops Density</div><div class="kpi-num" style="color:var(--blue)">3.9</div><div class="kpi-change neu">drops/kmÂ² avg</div></div>
-        <div class="kpi"><div class="kpi-label">GPS Accuracy</div><div class="kpi-num" style="color:var(--purple)">94%</div><div class="kpi-change up">â†‘ within 50m</div></div>
+        <div class="kpi"><div class="kpi-label">Top City</div><div class="kpi-num" style="color:var(--green);font-size:1.3rem">Pune</div><div class="kpi-change up">↑ 423 users</div></div>
+        <div class="kpi"><div class="kpi-label">Drops Density</div><div class="kpi-num" style="color:var(--blue)">3.9</div><div class="kpi-change neu">drops/km² avg</div></div>
+        <div class="kpi"><div class="kpi-label">GPS Accuracy</div><div class="kpi-num" style="color:var(--purple)">94%</div><div class="kpi-change up">↑ within 50m</div></div>
       </div>
       <div class="loc-map">
         <div class="loc-map-head"><span class="sec-card-title">Activity Map</span><span style="font-size:.75rem;color:var(--muted)">Dot size = user count</span></div>
@@ -291,9 +340,9 @@
       </div>
     </section>
 
-    <!-- â”€â”€ MEMORIES â”€â”€ -->
+    <!-- ── MEMORIES ── -->
     <section id="p-memories" class="asec">
-      <div class="topbar"><div><div class="page-title">All Memories</div><div class="page-sub" id="mem-table-sub">Loadingâ€¦</div></div></div>
+      <div class="topbar"><div><div class="page-title">All Memories</div><div class="page-sub" id="mem-table-sub">Loading…</div></div></div>
       <div class="sec-card">
         <div class="admin-filter-bar">
           <button class="aft active" onclick="this.parentElement.querySelectorAll('.aft').forEach(b=>b.classList.remove('active'));this.classList.add('active')">All</button>
@@ -306,15 +355,15 @@
       </div>
     </section>
 
-    <!-- â”€â”€ MODERATION â”€â”€ -->
+    <!-- ── MODERATION ── -->
     <section id="p-moderation" class="asec">
       <div class="topbar"><div><div class="page-title">Content Moderation</div><div class="page-sub">3 items need review</div></div></div>
       <div id="mod-list"></div>
     </section>
 
-    <!-- â”€â”€ FEEDBACK â”€â”€ -->
+    <!-- ── FEEDBACK ── -->
     <section id="p-feedback" class="asec">
-      <div class="topbar"><div><div class="page-title">User Feedback</div><div class="page-sub" id="fb-admin-sub">Loadingâ€¦</div></div></div>
+      <div class="topbar"><div><div class="page-title">User Feedback</div><div class="page-sub" id="fb-admin-sub">Loading…</div></div></div>
       <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)" id="fb-kpi-row"></div>
       <div class="chart-card" style="margin-bottom:1.25rem">
         <div class="chart-title">Rating distribution</div>
@@ -324,13 +373,13 @@
       <div id="fb-admin-list"></div>
     </section>
 
-    <!-- â”€â”€ ANALYTICS â”€â”€ -->
+    <!-- ── ANALYTICS ── -->
     <section id="p-analytics" class="asec">
       <div class="topbar"><div><div class="page-title">Analytics</div><div class="page-sub">Growth and engagement metrics</div></div></div>
       <div class="kpi-grid">
-        <div class="kpi"><div class="kpi-label">DAU / MAU ratio</div><div class="kpi-num" style="color:var(--green)">7.1%</div><div class="kpi-change up">â†‘ healthy engagement</div></div>
-        <div class="kpi"><div class="kpi-label">Avg session</div><div class="kpi-num" style="color:var(--blue)">4.2m</div><div class="kpi-change up">â†‘ +0.8m this week</div></div>
-        <div class="kpi"><div class="kpi-label">Retention D7</div><div class="kpi-num" style="color:var(--gold)">34%</div><div class="kpi-change up">â†‘ above avg for social</div></div>
+        <div class="kpi"><div class="kpi-label">DAU / MAU ratio</div><div class="kpi-num" style="color:var(--green)">7.1%</div><div class="kpi-change up">↑ healthy engagement</div></div>
+        <div class="kpi"><div class="kpi-label">Avg session</div><div class="kpi-num" style="color:var(--blue)">4.2m</div><div class="kpi-change up">↑ +0.8m this week</div></div>
+        <div class="kpi"><div class="kpi-label">Retention D7</div><div class="kpi-num" style="color:var(--gold)">34%</div><div class="kpi-change up">↑ above avg for social</div></div>
         <div class="kpi"><div class="kpi-label">Unlock rate</div><div class="kpi-num" style="color:var(--purple)">22.8%</div><div class="kpi-change neu">of all memories</div></div>
       </div>
       <div class="chart-grid" style="grid-template-columns:1fr">
@@ -357,345 +406,520 @@
   </main>
 </div>
 
-<script>
-/* â”€â”€â”€ ADMIN AUTH â”€â”€â”€ */
-const ADMIN_USERNAME = 'change_me';
-const ADMIN_PASSWORD = 'change_me';
+<script type="module">
+/* ════════════════════════════════════════════════
+   Echoes Admin — Production Script
+   Auth: Supabase email login + role check
+   Data: All real from Supabase (no localStorage, no dummy data)
+════════════════════════════════════════════════ */
 
-function adminLogin() {
-  const u=document.getElementById('login-user').value.trim();
-  const p=document.getElementById('login-pass').value.trim();
-  if (ADMIN_USERNAME === 'change_me' || ADMIN_PASSWORD === 'change_me') {
-    aToast('Configure admin credentials in admin.html before use');
+const SUPABASE_URL      = 'https://rtusvxxwfkyuxvdhzjwq.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0dXN2eHh3Zmt5dXh2ZGh6andxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3Mjg5OTEsImV4cCI6MjA4OTMwNDk5MX0.sxC3aI_miRnYiG8-JLQEH9K8-0Izd3QqklDvh43w5hg';
+
+const C    = { color: 'rgba(255,255,255,.08)' };
+const tick = { color: 'rgba(232,230,225,.4)', font: { size: 11 } };
+
+const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true }
+});
+
+let _adminData = { mems: [], users: [], fbs: [], msgs: [] };
+const _charts  = {};
+
+function mkChart(id, config) {
+  if (_charts[id]) _charts[id].destroy();
+  const el = document.getElementById(id);
+  if (el) _charts[id] = new Chart(el, config);
+}
+
+/* ─── Auth ─── */
+// Security: admin access is controlled ONLY by the `role` column in the
+// Supabase `users` table. No emails are hardcoded here.
+// To grant access: UPDATE users SET role = 'admin' WHERE email = 'you@gmail.com';
+// To revoke access: UPDATE users SET role = 'user' WHERE email = 'them@gmail.com';
+
+async function verifyAndEnter(supaUser) {
+  const email = (supaUser.email || '').toLowerCase().trim();
+
+  // Check role in DB — this is the single source of truth
+  const { data: profile, error } = await sb.from('users')
+    .select('role, name, avatar')
+    .eq('auth_uid', supaUser.id)
+    .single();
+
+  // No profile at all — sign out silently, show generic denial
+  if (error || !profile) {
+    await sb.auth.signOut();
+    showLoginError('⛔ Access denied.');
+    resetLoginForm();
+    return false;
+  }
+
+  // Not an admin — sign out immediately, no details given
+  if (profile.role !== 'admin') {
+    await sb.auth.signOut();
+    showLoginError('⛔ Access denied.');
+    resetLoginForm();
+    return false;
+  }
+
+  // ✅ Confirmed admin — enter dashboard
+  const nameEl = document.querySelector('.admin-info-name');
+  const roleEl = document.querySelector('.admin-info-role');
+  const avEl   = document.querySelector('.admin-av');
+  if (nameEl) nameEl.textContent = profile.name || email.split('@')[0] || 'Admin';
+  if (roleEl) roleEl.textContent = 'Super Admin';
+  if (avEl)   avEl.textContent   = profile.avatar || '👤';
+
+  document.getElementById('admin-login').style.display = 'none';
+  document.getElementById('admin-app').style.display   = 'flex';
+  initAdmin();
+  return true;
+}
+
+/* Google OAuth login */
+window.adminLoginGoogle = async function() {
+  const btn = document.getElementById('btn-google');
+  if (btn) { btn.textContent = 'Redirecting…'; btn.disabled = true; }
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.href }
+  });
+  if (error) {
+    showLoginError('Google sign-in failed: ' + error.message);
+    if (btn) { btn.textContent = 'Continue with Google'; btn.disabled = false; }
+  }
+};
+
+/* Magic Link login — works for ANY Supabase account incl GitHub-linked emails */
+window.sendMagicLink = async function() {
+  const email = (document.getElementById('login-user')?.value || '').trim();
+  const btn   = document.getElementById('btn-magic');
+  if (!email) { showLoginError('Enter your email address first.'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showLoginError('Enter a valid email address.'); return; }
+
+  if (btn) { btn.textContent = 'Sending…'; btn.disabled = true; }
+  hideLoginError();
+
+  const { error } = await sb.auth.signInWithOtp({
+    email,
+    options: {
+      shouldCreateUser: false,          // only allow existing Supabase users
+      emailRedirectTo: window.location.href
+    }
+  });
+
+  if (btn) { btn.textContent = 'Send Magic Link →'; btn.disabled = false; }
+
+  if (error) {
+    // "User not found" means this email isn't registered in Supabase
+    if (error.message?.includes('not found') || error.message?.includes('No user')) {
+      showLoginError('No account found with that email.\nCheck Supabase → Authentication → Users for your exact email.');
+    } else {
+      showLoginError(error.message || 'Failed to send link. Try again.');
+    }
     return;
   }
-  if(u===ADMIN_USERNAME&&p===ADMIN_PASSWORD){
-    document.getElementById('admin-login').style.display='none';
-    document.getElementById('admin-app').style.display='flex';
-    initAdmin();
-  } else { aToast('âŒ Invalid credentials'); }
+
+  // Show confirmation screen
+  document.getElementById('login-step-email').style.display = 'none';
+  document.getElementById('login-step-sent').style.display  = 'block';
+  const dispEl = document.getElementById('sent-email-display');
+  if (dispEl) dispEl.textContent = email;
+};
+
+/* Email + password fallback */
+window.adminLogin = async function() {
+  const email = (document.getElementById('login-user')?.value || '').trim();
+  const pass  = (document.getElementById('login-pass')?.value  || '').trim();
+  const btn   = document.getElementById('admin-login-btn');
+
+  if (!email)  { showLoginError('Enter your email address.'); return; }
+  if (!pass)   { showLoginError('Enter your password, or use the magic link instead.'); return; }
+
+  if (btn) { btn.textContent = 'Signing in…'; btn.disabled = true; }
+  hideLoginError();
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+
+  if (btn) { btn.textContent = 'Sign In with Password →'; btn.disabled = false; }
+
+  if (error || !data?.user) {
+    showLoginError(
+      'Password login failed.\n\nIf you signed up via GitHub, you don\'t have a password — use the Magic Link button above instead.'
+    );
+    return;
+  }
+
+  await verifyAndEnter(data.user);
+};
+
+window.resetLoginForm = function() {
+  document.getElementById('login-step-email').style.display = 'block';
+  document.getElementById('login-step-sent').style.display  = 'none';
+  hideLoginError();
+};
+
+function showLoginError(msg) {
+  const el = document.getElementById('login-error');
+  if (el) { el.textContent = msg; el.style.display = 'block'; el.style.whiteSpace = 'pre-line'; }
 }
-function adminLogout(){
-  document.getElementById('admin-app').style.display='none';
-  document.getElementById('admin-login').style.display='flex';
+function hideLoginError() {
+  const el = document.getElementById('login-error');
+  if (el) el.style.display = 'none';
 }
 
-/* â”€â”€â”€ NAV â”€â”€â”€ */
-function adminNav(page,btn){
-  document.querySelectorAll('.asec').forEach(s=>s.classList.remove('active'));
-  const sec=document.getElementById('p-'+page);
-  if(sec) sec.classList.add('active');
-  document.querySelectorAll('.anl').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
+window.adminLogout = async function() {
+  await sb.auth.signOut();
+  document.getElementById('admin-app').style.display   = 'none';
+  document.getElementById('admin-login').style.display = 'flex';
+  resetLoginForm();
+  const loginUser = document.getElementById('login-user');
+  const loginPass = document.getElementById('login-pass');
+  if (loginUser) loginUser.value = '';
+  if (loginPass) loginPass.value = '';
+};
+
+/* ── Handle magic link redirect + session resume ── */
+(async () => {
+  // Clean up hash from URL after OAuth/magic-link redirect
+  if (window.location.hash.includes('access_token') || window.location.hash.includes('error')) {
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
+  // Check for existing valid session first
+  const { data: { session } } = await sb.auth.getSession();
+  if (session?.user) {
+    verifyAndEnter(session.user);
+    return;
+  }
+
+  // Listen for magic link click completing (SIGNED_IN event fires when link is clicked)
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN' && session?.user) {
+      const loginScreen = document.getElementById('admin-login');
+      if (loginScreen && loginScreen.style.display !== 'none') {
+        verifyAndEnter(session.user);
+      }
+    }
+  });
+})();
+
+/* ─── Nav ─── */
+window.adminNav = function(page, btn) {
+  document.querySelectorAll('.asec').forEach(s => s.classList.remove('active'));
+  const sec = document.getElementById('p-' + page);
+  if (sec) sec.classList.add('active');
+  document.querySelectorAll('.anl').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+};
+
+/* ─── Init ─── */
+async function initAdmin() {
+  aToast('Loading from Supabase...');
+  try {
+    const [mr, ur, fr, msgr] = await Promise.all([
+      sb.from('memories').select('*').order('created_at', { ascending: false }).limit(500),
+      sb.from('users').select('*').order('last_seen', { ascending: false }).limit(500),
+      sb.from('feedback').select('*').order('created_at', { ascending: false }).limit(500),
+      sb.from('messages').select('*').order('created_at', { ascending: false }).limit(500),
+    ]);
+    _adminData.mems  = mr.data  || [];
+    _adminData.users = ur.data  || [];
+    _adminData.fbs   = fr.data  || [];
+    _adminData.msgs  = msgr.data || [];
+  } catch(e) { aToast('Data load failed: ' + (e.message||e)); }
+  populateRealKPIs(); renderOverviewCharts(); renderUsersTable();
+  renderLocMap(); renderLocTable(); renderMemTable();
+  renderModeration(); renderFeedbackAdmin(); renderAnalyticsCharts();
+  aToast('Data loaded');
 }
 
-/* â”€â”€â”€ STORAGE (read from user app localStorage) â”€â”€â”€ */
-const getM  = ()=>JSON.parse(localStorage.getItem('e_memories')||'[]');
-const getMsgs=()=>JSON.parse(localStorage.getItem('e_messages')||'[]');
-const getFB  = ()=>JSON.parse(localStorage.getItem('e_feedback')||'[]');
+window.refreshAdmin = function() { initAdmin(); };
 
-/* â”€â”€â”€ INIT â”€â”€â”€ */
-function initAdmin(){
-  renderOverviewCharts();
-  renderUsersTable();
-  renderLocMap();
-  renderLocTable();
-  renderMemTable();
-  renderModeration();
-  renderFeedbackAdmin();
-  renderAnalyticsCharts();
-  populateRealKPIs();
-}
-
+/* ─── KPIs ─── */
 function populateRealKPIs() {
-  const mems = getM();
-  const msgs = getMsgs();
-  const fbs = getFB();
+  const { mems, users, fbs, msgs } = _adminData;
   const now = Date.now();
-  const users = new Set();
-  const activeToday = new Set();
-
-  mems.forEach(m => {
-    const u = (m.creator || '').trim();
-    if (!u) return;
-    users.add(u.toLowerCase());
-    const ts = new Date(m.createdAt || Date.now()).getTime();
-    if (now - ts <= 86400000) activeToday.add(u.toLowerCase());
-  });
-  msgs.forEach(m => {
-    const u = (m.sender || '').trim();
-    if (!u) return;
-    users.add(u.toLowerCase());
-    const ts = new Date(m.createdAt || Date.now()).getTime();
-    if (now - ts <= 86400000) activeToday.add(u.toLowerCase());
-  });
-
-  // Real counts from localStorage
-  document.getElementById('kpi-user-count').textContent = users.size;
-  document.getElementById('kpi-active-count').textContent = activeToday.size;
-  document.getElementById('kpi-fb-count').textContent = fbs.length;
-  document.getElementById('kpi-mem-count').textContent = mems.length;
-  document.getElementById('kpi-unlock-count').textContent = mems.filter(m=>!m.locked).length;
-  const drops = mems.filter(m=>m.visibility==='public').length + msgs.filter(m=>m.type==='public'||m.type==='interest').length;
-  document.getElementById('kpi-drops-count').textContent = drops;
+  const activeToday = users.filter(u => now - new Date(u.last_seen||0).getTime() <= 86400000).length;
+  const el = id => document.getElementById(id);
+  if (el('kpi-user-count'))   el('kpi-user-count').textContent   = users.length;
+  if (el('kpi-active-count')) el('kpi-active-count').textContent = activeToday;
+  if (el('kpi-fb-count'))     el('kpi-fb-count').textContent     = fbs.length;
+  if (el('kpi-mem-count'))    el('kpi-mem-count').textContent    = mems.length;
+  if (el('kpi-unlock-count')) el('kpi-unlock-count').textContent = mems.filter(m => !m.locked).length;
+  const drops = mems.filter(m => m.visibility==='public').length
+              + msgs.filter(m => m.type==='public'||m.type==='interest').length;
+  if (el('kpi-drops-count'))  el('kpi-drops-count').textContent  = drops;
 }
 
-/* â”€â”€â”€ CHARTS â”€â”€â”€ */
-const C={color:'rgba(255,255,255,.08)'};
-const tick={color:'rgba(232,230,225,.4)',font:{size:11}};
+/* ─── Overview Charts (all real data) ─── */
+function renderOverviewCharts() {
+  const { mems, fbs, users } = _adminData;
+  const dow = [0,0,0,0,0,0,0];
+  users.forEach(u => dow[new Date(u.created_at||Date.now()).getDay()]++);
+  mkChart('chart-signups', { type:'bar', data:{
+    labels:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+    datasets:[{label:'Signups',data:dow,backgroundColor:'rgba(107,155,224,.6)',borderColor:'#6b9be0',borderWidth:1,borderRadius:4}]
+  }, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:C.color},ticks:tick},y:{grid:{color:C.color},ticks:tick}}}});
 
-function renderOverviewCharts(){
-  /* Signups */
-  new Chart(document.getElementById('chart-signups'),{type:'bar',data:{
-    labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
-    datasets:[{label:'Signups',data:[18,24,19,31,27,42,38],backgroundColor:'rgba(107,155,224,.6)',borderColor:'#6b9be0',borderWidth:1,borderRadius:4}]
-  },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:C.color},ticks:tick},y:{grid:{color:C.color},ticks:tick}}}});
-
-  /* Memory types */
-  new Chart(document.getElementById('chart-types'),{type:'doughnut',data:{
-    labels:['Nostalgia','Food','Photography','Travel','Friendship','Hidden'],
-    datasets:[{data:[32,21,18,14,9,6],backgroundColor:['#c8a96e','#6b9be0','#8b7de0','#4ead8a','#e06b6b','#5eb8a0'],borderWidth:0}]
+  const tagCounts={nostalgia:0,food:0,photography:0,travel:0,friendship:0,hidden:0};
+  mems.forEach(m=>{if(tagCounts[m.tag]!==undefined)tagCounts[m.tag]++;else tagCounts.hidden++;});
+  mkChart('chart-types',{type:'doughnut',data:{
+    labels:Object.keys(tagCounts).map(t=>t[0].toUpperCase()+t.slice(1)),
+    datasets:[{data:Object.values(tagCounts),backgroundColor:['#c8a96e','#6b9be0','#8b7de0','#4ead8a','#e06b6b','#5eb8a0'],borderWidth:0}]
   },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
 
-  /* Unlocks */
-  const ul=[4,7,5,9,12,8,14,11,17,15,20,18,24,22];
-  new Chart(document.getElementById('chart-unlocks'),{type:'line',data:{
+  const now=Date.now(); const ul=Array(14).fill(0);
+  mems.filter(m=>!m.locked).forEach(m=>{const d=Math.floor((now-new Date(m.updated_at||m.created_at).getTime())/86400000);if(d>=0&&d<14)ul[13-d]++;});
+  mkChart('chart-unlocks',{type:'line',data:{
     labels:ul.map((_,i)=>i===0?'-14d':i===13?'today':''),
     datasets:[{label:'Unlocks',data:ul,borderColor:'#c8a96e',backgroundColor:'rgba(200,169,110,.08)',fill:true,tension:.4,pointRadius:2,pointBackgroundColor:'#c8a96e'}]
   },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:tick},y:{grid:{color:C.color},ticks:tick}}}});
 
-  /* Sources */
-  const srcFB=getFB();
   const srcCounts={twitter:0,linkedin:0,instagram:0,whatsapp:0,friend:0,other:0};
-  srcFB.forEach(f=>{if(srcCounts[f.source]!==undefined)srcCounts[f.source]++;else srcCounts.other++;});
-  new Chart(document.getElementById('chart-sources'),{type:'bar',data:{
+  fbs.forEach(f=>{if(srcCounts[f.source]!==undefined)srcCounts[f.source]++;else srcCounts.other++;});
+  mkChart('chart-sources',{type:'bar',data:{
     labels:['Instagram','Twitter','WhatsApp','Friend','LinkedIn','Other'],
     datasets:[{data:Object.values(srcCounts),backgroundColor:['#e06b6b','#6b9be0','#4ead8a','#c8a96e','#8b7de0','#888'],borderRadius:4,borderWidth:0}]
   },options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{color:C.color},ticks:tick},y:{grid:{display:false},ticks:tick}}}});
 }
 
-function renderAnalyticsCharts(){
-  /* Growth */
-  const gd=[]; let cum=120;
-  for(let i=0;i<28;i++){cum+=Math.floor(Math.random()*25+5);gd.push(cum);}
-  new Chart(document.getElementById('chart-growth'),{type:'line',data:{
-    labels:gd.map((_,i)=>(i%7===0)?'wk '+(Math.floor(i/7)+1):''),
+/* ─── Analytics Charts ─── */
+function renderAnalyticsCharts() {
+  const now=Date.now(); const gd=Array(28).fill(0);
+  _adminData.users.forEach(u=>{const d=Math.floor((now-new Date(u.created_at||now).getTime())/86400000);if(d>=0&&d<28)gd[27-d]++;});
+  for(let i=1;i<28;i++) gd[i]+=gd[i-1];
+  mkChart('chart-growth',{type:'line',data:{
+    labels:gd.map((_,i)=>i%7===0?'wk '+(Math.floor(i/7)+1):''),
     datasets:[{label:'Users',data:gd,borderColor:'#4ead8a',backgroundColor:'rgba(78,173,138,.07)',fill:true,tension:.4,pointRadius:1}]
   },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:tick},y:{grid:{color:C.color},ticks:tick}}}});
 
-  /* Feature usage */
-  new Chart(document.getElementById('chart-features'),{type:'bar',data:{
-    labels:['Add Memory','View Gallery','Unlock','Nearby','Messages'],
-    datasets:[{data:[89,74,61,52,38],backgroundColor:'rgba(139,125,224,.6)',borderColor:'#8b7de0',borderWidth:1,borderRadius:4}]
+  const featCounts={unlock:0,tagged:0,discover:0,social:0,gallery:0};
+  _adminData.fbs.forEach(f=>(f.features||[]).forEach(ft=>{if(featCounts[ft]!==undefined)featCounts[ft]++;}));
+  mkChart('chart-features',{type:'bar',data:{
+    labels:['Unlock','Tagged','Discover','Social','Gallery'],
+    datasets:[{data:Object.values(featCounts),backgroundColor:'rgba(139,125,224,.6)',borderColor:'#8b7de0',borderWidth:1,borderRadius:4}]
   },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:tick},y:{grid:{color:C.color},ticks:tick}}}});
 
-  /* Platform */
-  new Chart(document.getElementById('chart-platform'),{type:'pie',data:{
-    labels:['Android','Web','iOS'],
-    datasets:[{data:[58,28,14],backgroundColor:['#4ead8a','#6b9be0','#c8a96e'],borderWidth:0}]
+  const pub=_adminData.mems.filter(m=>m.visibility==='public').length;
+  const priv=_adminData.mems.filter(m=>m.visibility==='private').length;
+  mkChart('chart-platform',{type:'pie',data:{
+    labels:['Public','Private'],
+    datasets:[{data:[pub,priv],backgroundColor:['#4ead8a','#6b9be0'],borderWidth:0}]
   },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'rgba(232,230,225,.5)',font:{size:11}}}}}});
 }
 
-function renderFeedbackAdmin(){
-  const fbs=getFB();
-  document.getElementById('fb-admin-sub').textContent=fbs.length+' total responses';
+/* ─── Feedback Admin ─── */
+function renderFeedbackAdmin() {
+  const fbs=_adminData.fbs;
+  const subEl=document.getElementById('fb-admin-sub');
+  if(subEl) subEl.textContent=fbs.length+' total responses';
   const avg=fbs.length?Math.round(fbs.reduce((a,f)=>a+(f.rating||3),0)/fbs.length*10)/10:0;
   const yes=fbs.filter(f=>f.yn==='yes').length;
   const maybe=fbs.filter(f=>f.yn==='maybe').length;
-  document.getElementById('fb-kpi-row').innerHTML=`
+  const kpiRow=document.getElementById('fb-kpi-row');
+  if(kpiRow) kpiRow.innerHTML=`
     <div class="kpi"><div class="kpi-label">Total Responses</div><div class="kpi-num" style="color:var(--blue)">${fbs.length}</div></div>
-    <div class="kpi"><div class="kpi-label">Avg Rating</div><div class="kpi-num" style="color:var(--gold)">${avg||'â€”'}</div><div class="kpi-change up">/ 5.0</div></div>
+    <div class="kpi"><div class="kpi-label">Avg Rating</div><div class="kpi-num" style="color:var(--gold)">${avg||'--'}</div><div class="kpi-change up">/ 5.0</div></div>
     <div class="kpi"><div class="kpi-label">Would Use</div><div class="kpi-num" style="color:var(--green)">${yes}</div><div class="kpi-change neu">${fbs.length?Math.round(yes/fbs.length*100):0}% yes</div></div>
     <div class="kpi"><div class="kpi-label">Maybe</div><div class="kpi-num" style="color:var(--gold)">${maybe}</div></div>`;
-
-  /* Ratings chart */
   const rats=[0,0,0,0,0];
-  fbs.forEach(f=>{ if(f.rating>=1&&f.rating<=5) rats[f.rating-1]++; });
-  new Chart(document.getElementById('chart-ratings'),{type:'bar',data:{
-    labels:['ðŸ˜ 1','ðŸ™‚ 2','ðŸ˜Š 3','ðŸ¤© 4','ðŸ”¥ 5'],
+  fbs.forEach(f=>{if(f.rating>=1&&f.rating<=5)rats[f.rating-1]++;});
+  mkChart('chart-ratings',{type:'bar',data:{
+    labels:['1','2','3','4','5'],
     datasets:[{data:rats,backgroundColor:['#e06b6b','#e09b6b','#c8a96e','#6b9be0','#4ead8a'],borderRadius:4,borderWidth:0}]
   },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:tick},y:{grid:{color:C.color},ticks:{...tick,stepSize:1}}}}});
-
-  const stars=['ðŸ˜','ðŸ™‚','ðŸ˜Š','ðŸ¤©','ðŸ”¥'];
+  const stars=['*','**','***','****','*****'];
   const ynCls={yes:'yn-yes',maybe:'yn-maybe',no:'yn-no',unknown:'yn-maybe'};
-  document.getElementById('fb-admin-list').innerHTML = fbs.length===0
-    ? '<div style="text-align:center;padding:3rem;color:var(--muted)">No feedback yet.</div>'
-    : fbs.map(f=>`<div class="fb-admin-card"><div class="rating-big">${f.rating||3}/5</div><div style="flex:1"><div class="fb-admin-name">${f.name||'Anonymous'}</div><div class="fb-admin-text">${f.text||''}</div></div></div>`).join('');
+  const fbList=document.getElementById('fb-admin-list');
+  if(fbList) fbList.innerHTML=fbs.length===0
+    ?'<div style="text-align:center;padding:3rem;color:var(--muted)">No feedback yet.</div>'
+    :fbs.map(f=>`<div class="fb-admin-card">
+      <div class="rating-big">${f.rating||3}/5</div>
+      <div style="flex:1">
+        <div class="fb-admin-name">${esc(f.name||'Anonymous')}</div>
+        <div class="fb-admin-text">${esc(f.text||'')}</div>
+        <div class="fb-admin-foot">
+          <span>via ${esc(f.source||'?')}</span>
+          <span class="yn-tag ${ynCls[f.yn]||'yn-maybe'}">${f.yn||'?'}</span>
+          <span>${fmtD(f.created_at)}</span>
+        </div>
+      </div>
+      <button onclick="deleteFeedback('${f.id}')" style="background:none;border:1px solid rgba(224,107,107,.3);color:#e06b6b;border-radius:6px;padding:.3rem .6rem;cursor:pointer;font-size:.72rem;flex-shrink:0">Delete</button>
+    </div>`).join('');
 }
+window.deleteFeedback = async function(id) {
+  if(!confirm('Delete this feedback?')) return;
+  await sb.from('feedback').delete().eq('id',id);
+  _adminData.fbs=_adminData.fbs.filter(f=>f.id!==id);
+  renderFeedbackAdmin(); populateRealKPIs(); aToast('Feedback deleted');
+};
 
-
-function buildUsersFromAppData() {
-  const mems = getM();
-  const msgs = getMsgs();
-  const users = {};
-
-  mems.forEach(m => {
-    const name = (m.creator || '').trim();
-    if (!name) return;
-    if (!users[name]) users[name] = {
-      av: m.creatorAv || 'U',
-      name,
-      handle: name.toLowerCase().replace(/\s+/g, '_'),
-      city: m.locationName ? String(m.locationName).split(',').pop().trim() : 'Unknown',
-      memories: 0,
-      joined: m.createdAt || new Date().toISOString(),
-      status: 'active'
-    };
-    users[name].memories += 1;
-  });
-
-  msgs.forEach(m => {
-    const name = (m.sender || '').trim();
-    if (!name) return;
-    if (!users[name]) users[name] = {
-      av: m.senderAv || 'U',
-      name,
-      handle: name.toLowerCase().replace(/\s+/g, '_'),
-      city: m.locationName ? String(m.locationName).split(',').pop().trim() : 'Unknown',
-      memories: 0,
-      joined: m.createdAt || new Date().toISOString(),
-      status: 'active'
-    };
-  });
-
-  return Object.values(users).sort((a, b) => b.memories - a.memories);
-}
-
-function renderUsersTable(){
-  const users = buildUsersFromAppData();
-  if (!users.length) {
-    document.getElementById('users-table').innerHTML =
-      '<thead><tr><th>User</th><th>City</th><th>Memories</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>'
-      + '<tbody><tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--muted)">No user activity yet.</td></tr></tbody>';
+/* ─── Users Table ─── */
+function renderUsersTable() {
+  const users=_adminData.users;
+  const memsByUid={};
+  _adminData.mems.forEach(m=>{memsByUid[m.creator_uid]=(memsByUid[m.creator_uid]||0)+1;});
+  const tbl=document.getElementById('users-table');
+  if(!tbl) return;
+  if(!users.length){
+    tbl.innerHTML='<thead><tr><th>User</th><th>Email</th><th>Memories</th><th>Last Seen</th><th>Status</th><th>Action</th></tr></thead><tbody><tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--muted)">No users yet.</td></tr></tbody>';
     return;
   }
-
-  document.getElementById('users-table').innerHTML=`
-    <thead><tr><th>User</th><th>City</th><th>Memories</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
-    <tbody>${users.map(u=>`
-      <tr>
-        <td><div style="display:flex;align-items:center;gap:.65rem"><div class="td-av">${u.av}</div><div><div class="td-name">${u.name}</div><div class="td-handle">@${u.handle}</div></div></div></td>
-        <td style="color:var(--muted)">${u.city}</td>
-        <td>${u.memories}</td>
-        <td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:.78rem">${fmtD(u.joined)}</td>
-        <td><span class="status-badge s-${u.status}">${u.status}</span></td>
-        <td><button onclick="aToast('Action completed')" style="background:none;border:1px solid var(--cb);border-radius:6px;color:var(--muted);padding:.28rem .65rem;cursor:pointer;font-size:.73rem;font-family:'DM Sans',sans-serif;transition:all .2s">...</button></td>
-      </tr>`).join('')}
-    </tbody>`;
+  tbl.innerHTML=`<thead><tr><th>User</th><th>Email</th><th>Memories</th><th>Last Seen</th><th>Status</th><th>Action</th></tr></thead>
+  <tbody>${users.map(u=>`<tr id="ur-${u.auth_uid}">
+    <td><div style="display:flex;align-items:center;gap:.65rem"><div class="td-av">${esc(u.avatar||'?')}</div>
+    <div><div class="td-name">${esc(u.name||'--')}</div><div class="td-handle">@${esc(u.username||u.name||'--')}</div></div></div></td>
+    <td style="color:var(--muted);font-size:.78rem;font-family:'DM Mono',monospace">${esc(u.email||'--')}</td>
+    <td>${memsByUid[u.auth_uid]||0}</td>
+    <td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:.78rem">${fmtD(u.last_seen)}</td>
+    <td><span class="status-badge ${u.banned?'s-flagged':'s-active'}">${u.banned?'Banned':'Active'}</span></td>
+    <td>${!u.banned
+      ?`<button onclick="banUser('${u.auth_uid}')" style="background:none;border:1px solid rgba(224,107,107,.3);color:#e06b6b;border-radius:6px;padding:.28rem .6rem;cursor:pointer;font-size:.72rem;">Ban</button>`
+      :`<button onclick="unbanUser('${u.auth_uid}')" style="background:none;border:1px solid rgba(78,173,138,.3);color:#4ead8a;border-radius:6px;padding:.28rem .6rem;cursor:pointer;font-size:.72rem;">Unban</button>`
+    }</td>
+  </tr>`).join('')}</tbody>`;
 }
+window.banUser = async function(uid) {
+  if(!confirm('Ban this user?')) return;
+  await sb.from('users').update({banned:true}).eq('auth_uid',uid);
+  const u=_adminData.users.find(x=>x.auth_uid===uid); if(u) u.banned=true;
+  renderUsersTable(); aToast('User banned');
+};
+window.unbanUser = async function(uid) {
+  await sb.from('users').update({banned:false}).eq('auth_uid',uid);
+  const u=_adminData.users.find(x=>x.auth_uid===uid); if(u) u.banned=false;
+  renderUsersTable(); aToast('User unbanned');
+};
 
-/* â”€â”€â”€ LOCATION MAP â”€â”€â”€ */
-const CITIES=[
-  {name:'Pune',users:423,drops:89,top:52,left:30},
-  {name:'Mumbai',users:312,drops:64,top:42,left:22},
-  {name:'Bangalore',users:187,drops:41,top:65,left:38},
-  {name:'Delhi',users:143,drops:29,top:22,left:40},
-  {name:'Hyderabad',users:98,drops:21,top:58,left:42},
-  {name:'Chennai',users:54,drops:12,top:70,left:44},
-  {name:'Kolkata',users:30,drops:7,top:35,left:62},
-];
-
-function renderLocMap(){
+/* ─── Location Map (real GPS data) ─── */
+function renderLocMap() {
   const map=document.getElementById('loc-map-inner');
-  CITIES.forEach(c=>{
+  if(!map) return;
+  map.querySelectorAll('.city-dot').forEach(d=>d.remove());
+  const grid={};
+  _adminData.mems.forEach(m=>{
+    if(!m.lat||!m.lng) return;
+    const key=Math.round(m.lat)+','+Math.round(m.lng);
+    if(!grid[key]) grid[key]={lat:m.lat,lng:m.lng,count:0,name:m.location_name||key};
+    grid[key].count++;
+  });
+  const clusters=Object.values(grid).sort((a,b)=>b.count-a.count).slice(0,10);
+  if(!clusters.length){map.innerHTML+='<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.85rem">No location data yet</div>';return;}
+  const lats=clusters.map(c=>c.lat),lngs=clusters.map(c=>c.lng);
+  const minLat=Math.min(...lats)-1,maxLat=Math.max(...lats)+1;
+  const minLng=Math.min(...lngs)-1,maxLng=Math.max(...lngs)+1;
+  clusters.forEach(c=>{
+    const top =100-((c.lat-minLat)/(maxLat-minLat)*80+10);
+    const left=(c.lng-minLng)/(maxLng-minLng)*80+10;
     const d=document.createElement('div'); d.className='city-dot';
-    d.style.top=c.top+'%'; d.style.left=c.left+'%';
-    d.innerHTML=`<div class="cd-dot"></div><div class="cd-lbl">${c.name}</div><div class="cd-count">${c.users} users</div>`;
-    d.onclick=()=>aToast(`ðŸ“ ${c.name}: ${c.users} users Â· ${c.drops} drops`);
+    d.style.top=top.toFixed(1)+'%'; d.style.left=left.toFixed(1)+'%';
+    d.innerHTML=`<div class="cd-dot"></div><div class="cd-lbl">${esc((c.name||'').split(',')[0].trim())}</div><div class="cd-count">${c.count} drops</div>`;
+    d.onclick=()=>aToast('Location: '+c.name+' ('+c.count+' drops)');
     map.appendChild(d);
   });
 }
 
-function renderLocTable(){
-  document.getElementById('loc-table').innerHTML=`
-    <thead><tr><th>City</th><th>Users</th><th>Memory Drops</th><th>Top Tag</th><th>Unlock Rate</th></tr></thead>
-    <tbody>${CITIES.map(c=>`
-      <tr>
-        <td style="font-weight:500">${c.name}</td>
-        <td>${c.users}</td>
-        <td>${c.drops}</td>
-        <td style="color:var(--muted)">ðŸ“¸ Photography</td>
-        <td><span style="color:var(--green)">${Math.floor(18+Math.random()*15)}%</span></td>
-      </tr>`).join('')}
-    </tbody>`;
+function renderLocTable() {
+  const tbl=document.getElementById('loc-table');
+  if(!tbl) return;
+  const grid={};
+  _adminData.mems.forEach(m=>{
+    if(!m.lat||!m.lng) return;
+    const key=parseFloat(m.lat).toFixed(1)+','+parseFloat(m.lng).toFixed(1);
+    if(!grid[key]) grid[key]={name:m.location_name||key,count:0,unlocked:0,tags:{}};
+    grid[key].count++;
+    if(!m.locked) grid[key].unlocked++;
+    if(m.tag) grid[key].tags[m.tag]=(grid[key].tags[m.tag]||0)+1;
+  });
+  const rows=Object.values(grid).sort((a,b)=>b.count-a.count).slice(0,15);
+  if(!rows.length){tbl.innerHTML='<thead><tr><th>Location</th><th>Drops</th><th>Unlocked</th><th>Top Tag</th><th>Unlock Rate</th></tr></thead><tbody><tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--muted)">No location data yet.</td></tr></tbody>';return;}
+  tbl.innerHTML=`<thead><tr><th>Location</th><th>Drops</th><th>Unlocked</th><th>Top Tag</th><th>Unlock Rate</th></tr></thead>
+  <tbody>${rows.map(r=>{
+    const topTag=Object.entries(r.tags).sort((a,b)=>b[1]-a[1])[0]?.[0]||'--';
+    const rate=r.count?Math.round(r.unlocked/r.count*100):0;
+    return `<tr>
+      <td style="font-weight:500;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.name)}</td>
+      <td>${r.count}</td><td>${r.unlocked}</td>
+      <td style="color:var(--muted)">${tagE(topTag)} ${topTag}</td>
+      <td><span style="color:${rate>50?'var(--green)':'var(--muted)'}">${rate}%</span></td>
+    </tr>`;
+  }).join('')}</tbody>`;
 }
 
-/* â”€â”€â”€ MEMORIES TABLE â”€â”€â”€ */
-function renderMemTable(){
-  const mems = getM();
-  const sub = document.getElementById('mem-table-sub');
-  if(sub) sub.textContent = mems.length + ' memories in localStorage';
-
-  if(mems.length === 0){
-    document.getElementById('mem-table').innerHTML =
-      '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--muted)">No memories saved yet. Use the user app to add some.</td></tr>';
-    return;
-  }
-
-  const sorted = [...mems].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
-  document.getElementById('mem-table').innerHTML=`
-    <thead><tr><th>Caption</th><th>Creator</th><th>Tag</th><th>Visibility</th><th>Status</th><th>Date</th></tr></thead>
-    <tbody>${sorted.map(m=>`
-      <tr>
-        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.caption}</td>
-        <td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:.78rem">@${m.creator||'unknown'}</td>
-        <td>${tagE(m.tag)} ${m.tag||'â€”'}</td>
-        <td><span class="status-badge ${m.visibility==='public'?'s-active':'s-inactive'}">${m.visibility||'private'}</span></td>
-        <td><span class="status-badge ${m.locked?'s-inactive':'s-active'}">${m.locked?'ðŸ”’ Locked':'ðŸ”“ Unlocked'}</span></td>
-        <td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:.73rem">${fmtD(m.createdAt)}</td>
-      </tr>`).join('')}
-    </tbody>`;
+/* ─── Memories Table ─── */
+function renderMemTable() {
+  const mems=_adminData.mems;
+  const sub=document.getElementById('mem-table-sub');
+  if(sub) sub.textContent=mems.length+' memories in Supabase';
+  const tbl=document.getElementById('mem-table');
+  if(!tbl) return;
+  if(!mems.length){tbl.innerHTML='<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--muted)">No memories yet.</td></tr>';return;}
+  tbl.innerHTML=`<thead><tr><th>Caption</th><th>Creator</th><th>Tag</th><th>Visibility</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+  <tbody>${mems.map(m=>`<tr id="mr-${m.id}">
+    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(m.caption||'')}</td>
+    <td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:.78rem">@${esc(m.creator_name||'?')}</td>
+    <td>${tagE(m.tag)} ${esc(m.tag||'--')}</td>
+    <td><span class="status-badge ${m.visibility==='public'?'s-active':'s-inactive'}">${m.visibility||'private'}</span></td>
+    <td><span class="status-badge ${m.locked?'s-inactive':'s-active'}">${m.locked?'Locked':'Unlocked'}</span></td>
+    <td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:.73rem">${fmtD(m.created_at)}</td>
+    <td><button onclick="deleteMemory('${m.id}')" style="background:none;border:1px solid rgba(224,107,107,.3);color:#e06b6b;border-radius:6px;padding:.28rem .6rem;cursor:pointer;font-size:.72rem;">Delete</button></td>
+  </tr>`).join('')}</tbody>`;
 }
+window.deleteMemory = async function(id) {
+  if(!confirm('Delete this memory?')) return;
+  await sb.from('memories').delete().eq('id',id);
+  _adminData.mems=_adminData.mems.filter(m=>m.id!==id);
+  renderMemTable(); populateRealKPIs(); aToast('Memory deleted');
+};
 
-/* â”€â”€â”€ MODERATION â”€â”€â”€ */
-const MOD_ITEMS=[
-  {id:'mod1',user:'spam_acc',av:'âš¡',text:'Buy cheap followers now! Click here to get 10k followers instantly!!!',tag:'hidden',flagReason:'Spam / promotional content',date:'2h ago',flagged:true},
-  {id:'mod2',user:'anon_123',av:'ðŸŽ­',text:'This location drop has inappropriate language directed at someone.',tag:'friendship',flagReason:'Reported by 2 users',date:'5h ago',flagged:true},
-  {id:'mod3',user:'test_acc',av:'ðŸŒ™',text:'Test memory with coordinates 18.52, 73.85 â€” ignore this',tag:'nostalgia',flagReason:'Looks like test content',date:'1d ago',flagged:false},
-];
-
-function renderModeration(){
-  document.getElementById('mod-list').innerHTML=MOD_ITEMS.map(m=>`
-    <div class="mod-card ${m.flagged?'flagged':''}" id="mc-${m.id}">
-      <div class="mod-thumb">${m.av}</div>
-      <div class="mod-info">
-        <div class="mod-user">@${m.user} Â· ${tagE(m.tag)} ${m.tag}</div>
-        <div class="mod-text">"${m.text}"</div>
-        <div class="mod-meta">
-          <span>ðŸš© ${m.flagReason}</span>
-          <span>ðŸ• ${m.date}</span>
-        </div>
+/* ─── Moderation (real public memories) ─── */
+function renderModeration() {
+  const modList=document.getElementById('mod-list');
+  if(!modList) return;
+  const pubMems=_adminData.mems.filter(m=>m.visibility==='public').slice(0,20);
+  if(!pubMems.length){modList.innerHTML='<div style="text-align:center;padding:3rem;color:var(--muted)">No public content to moderate.</div>';return;}
+  modList.innerHTML=pubMems.map(m=>`<div class="mod-card" id="mc-${m.id}">
+    <div class="mod-thumb">${esc(m.creator_av||'?')}</div>
+    <div class="mod-info">
+      <div class="mod-user">@${esc(m.creator_name||'?')} &middot; ${tagE(m.tag)} ${esc(m.tag||'')}</div>
+      <div class="mod-text">"${esc(m.caption||'')}"</div>
+      <div class="mod-meta">
+        <span>Location: ${esc(m.location_name||'Unknown')}</span>
+        <span>${fmtD(m.created_at)}</span>
+        <span>${m.likes||0} likes</span>
       </div>
-      <div class="mod-actions">
-        <button class="btn-approve" onclick="modAction('${m.id}','approve')">âœ“ Keep</button>
-        <button class="btn-remove" onclick="modAction('${m.id}','remove')">âœ• Remove</button>
-      </div>
-    </div>`).join('');
+    </div>
+    <div class="mod-actions">
+      <button class="btn-approve" onclick="modAction('${m.id}','approve')">Keep</button>
+      <button class="btn-remove"  onclick="modAction('${m.id}','remove')">Remove</button>
+    </div>
+  </div>`).join('');
 }
-
-function modAction(id,action){
+window.modAction = async function(id, action) {
+  if(action==='remove'){
+    if(!confirm('Hide this memory from public?')) return;
+    await sb.from('memories').update({visibility:'private'}).eq('id',id);
+    _adminData.mems=_adminData.mems.map(m=>m.id===id?{...m,visibility:'private'}:m);
+    aToast('Memory hidden');
+  } else { aToast('Content approved'); }
   const el=document.getElementById('mc-'+id);
   if(el){el.style.opacity='0';el.style.transform='translateX(20px)';el.style.transition='all .3s';setTimeout(()=>el.remove(),300);}
-  aToast(action==='approve'?'âœ… Content kept':'ðŸ—‘ Content removed');
-}
+};
 
-/* â”€â”€â”€ TOAST â”€â”€â”€ */
-function aToast(msg,dur=2500){
+/* ─── Toast + Helpers ─── */
+window.aToast = function(msg, dur=2500) {
   const el=document.getElementById('a-toast');
+  if(!el) return;
   el.textContent=msg; el.classList.remove('hidden');
   clearTimeout(el._t); el._t=setTimeout(()=>el.classList.add('hidden'),dur);
-}
+};
 
-/* â”€â”€â”€ HELPERS â”€â”€â”€ */
-function tagE(t){const m={nostalgia:'ðŸ•°ï¸',food:'ðŸœ',travel:'âœˆï¸',photography:'ðŸ“¸',friendship:'ðŸ‘¥',hidden:'ðŸ“'};return m[t]||'âœ¨';}
-function fmtD(iso){return new Date(iso).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});}
+function tagE(t){return({nostalgia:'',food:'',travel:'',photography:'',friendship:'',hidden:''}[t]||'')+' '+(t||'');}
+function fmtD(iso){if(!iso)return '--';try{return new Date(iso).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});}catch{return '--';}}
+function esc(v){return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 </script>
 </body>
 </html>
-
-
-
-
-
-
-

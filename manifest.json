@@ -1,8 +1,9 @@
 {
-  "name": "Echoes \u2014 Memories Unlocked by Place",
+  "name": "Echoes — Memories Unlocked by Place",
   "short_name": "Echoes",
   "description": "Drop memories at places. Return to unlock them.",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0b0c10",
   "theme_color": "#c8a96e",
@@ -11,7 +12,8 @@
     {
       "src": "icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "icons/icon-512.png",
@@ -20,9 +22,11 @@
       "purpose": "maskable any"
     }
   ],
-  "categories": [
-    "social",
-    "lifestyle",
-    "photography"
-  ]
+  "categories": ["social", "lifestyle", "photography"],
+  "screenshots": [],
+  "share_target": {
+    "action": "/",
+    "method": "GET",
+    "params": { "title": "title", "text": "text", "url": "url" }
+  }
 }
