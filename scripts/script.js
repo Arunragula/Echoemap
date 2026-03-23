@@ -20,31 +20,13 @@ let galFilter    = 'all', nearbyFilter = 'all';
 let deferredInstall = null;
 let otpConfirmation = null;
 
-/* ─── DEMO DATA (only loaded when user picks "Explore Demo") ─── */
-const DEMO_MEMORIES = [
-  { id:'dm1', image:null, caption:'First chai stop in Pune — the fog was thick, the tea was perfect.', filter:'warm', createdAt:new Date(Date.now()-86400000*3).toISOString(), lat:18.5204, lng:73.8567, locked:false, visibility:'public', creator:'wanderer', creatorAv:'✈️', tag:'nostalgia', likes:12, comments:[{author:'arun_k',text:'I remember this spot!',ts:Date.now()-3600000},{author:'priya_m',text:'Which chai stall? 😍',ts:Date.now()-1800000}] },
-  { id:'dm2', image:null, caption:'College campus throwback — the bench where everything began.', filter:'vintage', createdAt:new Date(Date.now()-86400000*7).toISOString(), lat:18.5500, lng:73.8300, locked:true, visibility:'private', creator:'demo', creatorAv:'🌙', tag:'nostalgia', likes:0, comments:[] },
-  { id:'dm3', image:null, caption:'Sunset at the ghats — photography lovers, this one\'s for you 🌅', filter:'cinematic', createdAt:new Date(Date.now()-86400000).toISOString(), lat:18.5100, lng:73.8200, locked:false, visibility:'public', creator:'lens_life', creatorAv:'📸', tag:'photography', likes:47, comments:[{author:'shutterhead',text:'Golden hour goals 📸',ts:Date.now()-600000}] },
-  { id:'dm4', image:null, caption:'Hidden biryani spot near Kalyani Nagar. Food lovers only 🍛', filter:'original', createdAt:new Date(Date.now()-86400000*2).toISOString(), lat:18.5480, lng:73.9020, locked:true, visibility:'public', creator:'foodwanderer', creatorAv:'🍜', tag:'food', likes:31, comments:[] }
-];
-const DEMO_MESSAGES = [
-  { id:'msg1', type:'tagged', text:'Remember that late night after our last exam? Left something for you here.', taggedPerson:'DemoUser', category:'friendship', lat:18.5204, lng:73.8567, radius:100, sender:'wanderer', senderAv:'✈️', createdAt:new Date(Date.now()-86400000*2).toISOString(), locked:true },
-  { id:'msg2', type:'interest', text:'Hidden sunset photograph for travel lovers. The view from here changed my life.', taggedPerson:null, category:'photography', lat:18.5100, lng:73.8200, radius:250, sender:'lens_life', senderAv:'📸', createdAt:new Date(Date.now()-86400000).toISOString(), locked:true },
-  { id:'msg3', type:'public', text:'Food lovers — best misal pav in Pune is 50m left of this pin 🌶️', taggedPerson:null, category:'food', lat:18.5300, lng:73.8600, radius:100, sender:'foodwanderer', senderAv:'🍜', createdAt:new Date(Date.now()-43200000).toISOString(), locked:false }
-];
-const DEMO_FEEDBACK = [
-  { name:'Priya M.', rating:5, text:'Beautiful idea. The location unlock mechanic feels so nostalgic. Would use this every trip!', source:'instagram', yn:'yes', ts: Date.now()-100000 },
-  { name:'Rohan K.', rating:4, text:'Love the tagged message concept. Imagine leaving a memory at your grandma\'s house for your kids 😭', source:'twitter', yn:'yes', ts: Date.now()-200000 },
-  { name:'Anonymous', rating:3, text:'Cool concept but needs a real map. The discovery piece could be addictive if it works well.', source:'whatsapp', yn:'maybe', ts: Date.now()-300000 }
-];
+/* ─── PRODUCTION: Demo data removed ─── */
 
 /* ─── STORAGE HELPERS ─── */
 const getM    = () => JSON.parse(localStorage.getItem('e_memories')  || '[]');
 const getMsgs = () => JSON.parse(localStorage.getItem('e_messages')  || '[]');
-const getFB   = () => JSON.parse(localStorage.getItem('e_feedback')  || '[]');
 const saveM   = d  => localStorage.setItem('e_memories',  JSON.stringify(d));
 const saveMsgs= d  => localStorage.setItem('e_messages',  JSON.stringify(d));
-const saveFB  = d  => localStorage.setItem('e_feedback',  JSON.stringify(d));
 
 const ALLOW_MANUAL_LOCATION_OVERRIDE = false;
 const MIN_UNLOCK_ACCURACY_M = 150;
@@ -168,36 +150,97 @@ document.addEventListener('DOMContentLoaded', async () => {
     navigator.serviceWorker.register('service-worker.js').catch(() => {});
   }
 
-  // Firebase init
+  // ── Supabase init + auth routing ──
   if (typeof SUPABASE_ENABLED !== 'undefined' && SUPABASE_ENABLED) {
     const ok = await initSupabase();
     if (ok) {
-      listenAuthState(sbUser => {
-        if (sbUser && !localStorage.getItem('e_user')) {
-          user = {
-            name:  sbUser.user_metadata?.full_name || sbUser.email?.split('@')[0] || 'Explorer',
-            av:    sbUser.user_metadata?.avatar    || selAv || '🌙',
-            uid:   sbUser.id,
-            email: sbUser.email || ''
-          };
-          localStorage.setItem('e_user', JSON.stringify(user));
-          launchApp();
+      // Detect OAuth return (Google redirects back with access_token in hash or oauth_return param)
+      const urlParams  = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
+      const isOAuthReturn = urlParams.has('oauth_return') ||
+                            hashParams.has('access_token') ||
+                            window.location.hash.includes('access_token');
+
+      // Always check for an existing valid session first
+      const sessionUser = await getSessionUser();
+
+      if (sessionUser) {
+        // Valid session found — decide if user needs username setup
+        const needsSetup = await userNeedsUsernameSetup(sessionUser);
+        const storedUser = localStorage.getItem('e_user');
+
+        if (needsSetup) {
+          // New user via Google / OAuth — show username setup before entering app
+          showUsernameSetupModal(sessionUser);
+        } else if (storedUser) {
+          try {
+            user = JSON.parse(storedUser);
+            user.uid = sessionUser.id; // always refresh uid from live session
+            launchApp();
+          } catch {
+            localStorage.removeItem('e_user');
+            loadUserAndLaunch(sessionUser);
+          }
+        } else {
+          loadUserAndLaunch(sessionUser);
+        }
+
+        // Clean OAuth tokens from URL bar
+        if (isOAuthReturn || window.location.hash.includes('access_token')) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        // Listen for future auth events (sign-out, token refresh)
+        listenAuthState((event, sbUser) => {
+          if (event === 'SIGNED_OUT') {
+            localStorage.removeItem('e_user');
+          }
+        });
+        return; // ← early return: we've handled everything
+      }
+
+      // No existing session — register listener for future logins/signups
+      listenAuthState((event, sbUser) => {
+        if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && sbUser) {
+          if (!localStorage.getItem('e_user')) {
+            userNeedsUsernameSetup(sbUser).then(needsSetup => {
+              if (needsSetup) {
+                showUsernameSetupModal(sbUser);
+              } else {
+                loadUserAndLaunch(sbUser);
+              }
+            });
+          }
+        }
+        if (event === 'SIGNED_OUT') {
+          localStorage.removeItem('e_user');
         }
       });
     }
   }
 
-  // Check for returning user — launch app directly if session exists
+  // Check for returning guest/local user (no Supabase session required)
   const saved = localStorage.getItem('e_user');
   if (saved) {
     try {
       user = JSON.parse(saved);
+      // If user has a cloud uid, verify session is still alive
+      if (user.uid && !user.uid.startsWith('local_') &&
+          typeof getSessionUser === 'function' && SUPABASE_ENABLED) {
+        const live = await getSessionUser();
+        if (!live) {
+          // Session expired — force re-login
+          localStorage.removeItem('e_user');
+          return;
+        }
+        user.uid = live.id; // refresh
+      }
       launchApp();
     } catch {
       localStorage.removeItem('e_user');
     }
   }
-  // else: landing page is visible by default (normal document flow)
+  // else: landing page stays visible
 });
 
 function installPWA() {
@@ -220,51 +263,150 @@ function pickAv(btn) {
 
 async function enterApp() {
   const n = cleanText(document.getElementById('e-name').value, 24) || 'Explorer';
-
   let uid = 'local_' + Date.now();
-
   if (typeof SUPABASE_ENABLED !== 'undefined' && SUPABASE_ENABLED) {
     try {
-      // getSessionUid() reuses existing session — no new anon call if already signed in
       const existing = await getSessionUid();
-      if (existing) {
-        uid = existing;
-      } else {
-        const anonUser = await signInAnonymously();
-        if (anonUser) uid = anonUser.id;
-      }
+      if (existing) uid = existing;
     } catch (e) { console.warn('Auth check failed, using local uid:', e.message); }
   }
-
   user = { name: n, av: selAv, uid };
   localStorage.setItem('e_user', JSON.stringify(user));
   launchApp();
 }
 
-async function enterDemo() {
-  let uid = 'demo';
-
-  if (typeof SUPABASE_ENABLED !== 'undefined' && SUPABASE_ENABLED) {
-    try {
-      const existing = await getSessionUid();
-      if (existing) {
-        uid = existing;
-      } else {
-        const anonUser = await signInAnonymously();
-        if (anonUser) uid = anonUser.id;
-      }
-    } catch (e) { console.warn('Auth check failed for demo:', e.message); }
+/* ─── loadUserAndLaunch: fetch profile from DB and launch ─── */
+async function loadUserAndLaunch(sbUser) {
+  if (!sbUser) return;
+  try {
+    // Try to get stored profile from users table
+    const { data } = await sb().from('users').select('name, username, avatar').eq('auth_uid', sbUser.id).single();
+    const name = data?.username || data?.name ||
+                 sbUser.user_metadata?.full_name || sbUser.email?.split('@')[0] || 'Explorer';
+    const av   = data?.avatar || sbUser.user_metadata?.avatar || '🌙';
+    user = { name, av, uid: sbUser.id, email: sbUser.email || '' };
+  } catch {
+    user = {
+      name:  sbUser.user_metadata?.full_name || sbUser.email?.split('@')[0] || 'Explorer',
+      av:    sbUser.user_metadata?.avatar || '🌙',
+      uid:   sbUser.id,
+      email: sbUser.email || ''
+    };
   }
+  localStorage.setItem('e_user', JSON.stringify(user));
+  launchApp();
+}
 
-  user = { name: 'DemoUser', av: '🌙', uid };
+/* ─── Username Setup Modal (shown after Google OAuth / new email signup) ─── */
+function showUsernameSetupModal(sbUser) {
+  // Remove existing if any
+  const existing = document.getElementById('username-setup-modal');
+  if (existing) existing.remove();
+
+  const avatars = ['🌙','🔥','🌿','🌊','✨','📸','🎭','🗺️'];
+  let setupAv = sbUser.user_metadata?.avatar || '🌙';
+
+  const modal = document.createElement('div');
+  modal.id = 'username-setup-modal';
+  modal.style.cssText = `
+    position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);
+    z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;
+  `;
+  modal.innerHTML = `
+    <div style="
+      background:#0e0f18;border:1px solid rgba(200,169,110,0.25);border-radius:20px;
+      padding:2.5rem;width:100%;max-width:400px;text-align:center;
+      box-shadow:0 25px 80px rgba(0,0,0,0.6);
+    ">
+      <div style="font-size:2rem;margin-bottom:.5rem">◎</div>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.6rem;color:#ede9e0;margin-bottom:.4rem">
+        One last step
+      </h2>
+      <p style="font-size:.85rem;color:rgba(237,233,224,0.5);margin-bottom:1.75rem;line-height:1.6">
+        Pick your display name and avatar.<br>This is how others will see you on Echoes.
+      </p>
+      <div style="margin-bottom:1.25rem;text-align:left">
+        <label style="font-size:.75rem;color:rgba(237,233,224,0.5);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.4rem">
+          Display Name
+        </label>
+        <input id="setup-username" type="text" maxlength="24"
+          value="${esc(sbUser.user_metadata?.full_name || sbUser.email?.split('@')[0] || '')}"
+          placeholder="e.g. Arun"
+          style="
+            width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);
+            border-radius:10px;padding:.8rem 1rem;color:#ede9e0;font-size:.95rem;outline:none;
+            font-family:'DM Sans',sans-serif;box-sizing:border-box;
+          "
+        />
+      </div>
+      <div style="margin-bottom:1.75rem;text-align:left">
+        <label style="font-size:.75rem;color:rgba(237,233,224,0.5);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:.6rem">
+          Your Avatar
+        </label>
+        <div id="setup-av-grid" style="display:flex;gap:.5rem;flex-wrap:wrap">
+          ${avatars.map(a => `
+            <button onclick="pickSetupAv(this,'${a}')"
+              data-av="${a}"
+              style="
+                width:42px;height:42px;border-radius:10px;border:2px solid rgba(255,255,255,0.1);
+                background:rgba(255,255,255,0.05);cursor:pointer;font-size:1.3rem;
+                transition:all .15s ease;${a === setupAv ? 'border-color:#c8a96e;background:rgba(200,169,110,0.15);' : ''}
+              "
+            >${a}</button>
+          `).join('')}
+        </div>
+      </div>
+      <button id="setup-submit-btn" onclick="submitUsernameSetup('${sbUser.id}','${sbUser.email||''}')"
+        style="
+          width:100%;background:#c8a96e;border:none;border-radius:10px;padding:.9rem;
+          color:#060609;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;
+          cursor:pointer;transition:all .2s ease;
+        "
+      >
+        Enter Echoes →
+      </button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+function pickSetupAv(btn, av) {
+  document.querySelectorAll('#setup-av-grid button').forEach(b => {
+    b.style.borderColor = 'rgba(255,255,255,0.1)';
+    b.style.background  = 'rgba(255,255,255,0.05)';
+  });
+  btn.style.borderColor = '#c8a96e';
+  btn.style.background  = 'rgba(200,169,110,0.15)';
+  // store selected avatar on btn for retrieval
+  btn.closest('#setup-av-grid').dataset.selected = av;
+}
+
+async function submitUsernameSetup(uid, email) {
+  const nameInput = document.getElementById('setup-username');
+  const avGrid    = document.getElementById('setup-av-grid');
+  const btn       = document.getElementById('setup-submit-btn');
+
+  const name = cleanText(nameInput?.value, 24).trim();
+  if (!name || name.length < 2) {
+    nameInput.style.borderColor = '#e06b6b';
+    nameInput.placeholder = 'Name is required (min 2 chars)';
+    return;
+  }
+  const av = avGrid?.dataset.selected ||
+             avGrid?.querySelector('button[style*="c8a96e"]')?.dataset.av || '🌙';
+
+  if (btn) { btn.textContent = 'Saving…'; btn.disabled = true; }
+
+  try {
+    await updateUsername(uid, name, av);
+  } catch (e) { console.warn('updateUsername:', e); }
+
+  user = { name, av, uid, email };
   localStorage.setItem('e_user', JSON.stringify(user));
 
-  if (!localStorage.getItem('e_demo_seeded')) {
-    saveM(DEMO_MEMORIES);
-    saveMsgs(DEMO_MESSAGES);
-    saveFB(DEMO_FEEDBACK);
-    localStorage.setItem('e_demo_seeded', '1');
-  }
+  const modal = document.getElementById('username-setup-modal');
+  if (modal) modal.remove();
+
   launchApp();
 }
 
@@ -286,42 +428,103 @@ function switchAuthTab(tab, btn) {
 async function loginWithEmail() {
   const email = (document.getElementById('login-email')?.value || '').trim();
   const pass  = (document.getElementById('login-password')?.value || '').trim();
+  const btn   = document.querySelector('#auth-tab-login .btn-primary');
+
   if (!email || !pass) { showToast('Enter email and password'); return; }
-  if (typeof SUPABASE_ENABLED !== 'undefined' && SUPABASE_ENABLED) {
-    showToast('Logging in…');
+
+  if (typeof SUPABASE_ENABLED === 'undefined' || !SUPABASE_ENABLED) {
+    showToast('Backend not connected'); return;
+  }
+
+  if (btn) { btn.textContent = 'Logging in…'; btn.disabled = true; }
+  showToast('Logging in…');
+
+  try {
     const sbUser = await signInWithEmail(email, pass);
     if (sbUser) {
-      user = {
-        name:  sbUser.user_metadata?.full_name || email.split('@')[0],
-        av:    sbUser.user_metadata?.avatar   || selAv || '🌙',
-        uid:   sbUser.id,
-        email: sbUser.email
-      };
-      localStorage.setItem('e_user', JSON.stringify(user));
-      launchApp();
+      const needsSetup = await userNeedsUsernameSetup(sbUser);
+      if (needsSetup) {
+        showUsernameSetupModal(sbUser);
+      } else {
+        await loadUserAndLaunch(sbUser);
+      }
     }
-  } else {
-    showToast('Set SUPABASE_ENABLED = true first');
+  } catch (err) {
+    console.error('loginWithEmail error:', err);
+    showToast('Login failed. Check your credentials.');
   }
+
+  if (btn) { btn.textContent = 'Login →'; btn.disabled = false; }
 }
 
 async function signupWithEmail() {
-  const name  = cleanText(document.getElementById('signup-name')?.value, 24) || 'Explorer';
+  const name  = cleanText(document.getElementById('signup-name')?.value, 24).trim();
   const email = (document.getElementById('signup-email')?.value || '').trim();
   const pass  = (document.getElementById('signup-password')?.value || '').trim();
-  if (!email || !pass) { showToast('Enter email and password'); return; }
-  if (pass.length < 6)  { showToast('Password must be at least 6 characters'); return; }
-  if (typeof SUPABASE_ENABLED !== 'undefined' && SUPABASE_ENABLED) {
-    showToast('Creating account…');
+  const btn   = document.getElementById('signup-btn');
+
+  // Validation
+  if (!name || name.length < 2)  { showToast('Enter your display name (min 2 chars)'); return; }
+  if (!email)                     { showToast('Enter your email address'); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Enter a valid email address'); return; }
+  if (!pass || pass.length < 6)  { showToast('Password must be at least 6 characters'); return; }
+
+  if (typeof SUPABASE_ENABLED === 'undefined' || !SUPABASE_ENABLED) {
+    showToast('Backend not connected'); return;
+  }
+
+  if (btn) { btn.textContent = 'Creating account…'; btn.disabled = true; }
+  showToast('Creating account…');
+
+  try {
     const sbUser = await signUpWithEmail(email, pass, name, selAv);
-    if (sbUser) {
-      user = { name, av: selAv, uid: sbUser.id, email: sbUser.email };
-      localStorage.setItem('e_user', JSON.stringify(user));
-      showToast('✅ Account created! Welcome to Echoes.');
-      launchApp();
+
+    if (!sbUser) {
+      // Error already shown by signUpWithEmail
+      if (btn) { btn.textContent = 'Create Account →'; btn.disabled = false; }
+      return;
     }
-  } else {
-    showToast('Set SUPABASE_ENABLED = true first');
+
+    // Supabase may require email confirmation (identities array empty = needs confirm)
+    const needsConfirm = !sbUser.confirmed_at &&
+                         !sbUser.email_confirmed_at &&
+                         (!sbUser.identities || sbUser.identities.length === 0);
+
+    if (needsConfirm) {
+      if (btn) { btn.textContent = 'Create Account →'; btn.disabled = false; }
+      // Show confirmation message in the card
+      const card = document.getElementById('auth-tab-signup');
+      if (card) {
+        card.innerHTML = `
+          <div style="text-align:center;padding:2rem 0">
+            <div style="font-size:2.5rem;margin-bottom:1rem">📬</div>
+            <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--text);margin-bottom:.75rem">
+              Check your email
+            </h2>
+            <p style="font-size:.87rem;color:var(--muted);line-height:1.7;margin-bottom:1.5rem">
+              We sent a confirmation link to<br>
+              <strong style="color:var(--text)">${esc(email)}</strong><br><br>
+              Click the link in the email, then come back and log in.
+            </p>
+            <button class="btn-primary bfull" onclick="switchAuthTab('login',document.querySelector('.auth-tab'))">
+              Go to Login →
+            </button>
+          </div>`;
+      }
+      return;
+    }
+
+    // Email confirmation disabled — logged in immediately
+    user = { name, av: selAv, uid: sbUser.id, email: sbUser.email };
+    localStorage.setItem('e_user', JSON.stringify(user));
+    showToast('✅ Welcome to Echoes, ' + name + '!');
+    if (btn) { btn.textContent = 'Create Account →'; btn.disabled = false; }
+    launchApp();
+
+  } catch (err) {
+    console.error('signupWithEmail error:', err);
+    showToast('Something went wrong. Try again.');
+    if (btn) { btn.textContent = 'Create Account →'; btn.disabled = false; }
   }
 }
 
@@ -333,11 +536,10 @@ async function forgotPassword() {
 
 async function signInGoogle() {
   if (typeof SUPABASE_ENABLED === 'undefined' || !SUPABASE_ENABLED) {
-    showToast('⚠️ Set SUPABASE_ENABLED = true in supabase-config.js first');
+    showToast('⚠️ Backend not connected');
     return;
   }
-  const fbUser = await signInWithGoogle();
-  if (!fbUser) showToast('❌ Google sign-in failed. Try again.');
+  await signInWithGoogle(); // supabase-config handles redirect
 }
 
 function showAuthStep(n) {
@@ -363,13 +565,16 @@ function logout() {
     fbSignOut().catch(() => {});
   }
 
-  // Clear session
+  // Clear all local session data
   localStorage.removeItem('e_user');
   localStorage.removeItem('e_demo_seeded');
 
   // Reset state
   user = { name: 'Explorer', av: '🌙', uid: null };
   fbRating = 0; fbYN = '';
+  imgData = null; msgImgData = null;
+  memLat = null; memLng = null;
+  msgLatV = null; msgLngV = null;
 
   // Hide app
   const appEl = document.getElementById('app');
@@ -382,15 +587,18 @@ function logout() {
   const landing = document.getElementById('landing');
   if (landing) landing.style.display = '';
 
-  // Scroll to top of landing
+  // Scroll to top
   window.scrollTo(0, 0);
 
-  // Reset entry form
+  // Reset entry forms
   const nameInp = document.getElementById('e-name');
   if (nameInp) nameInp.value = '';
   document.querySelectorAll('.av-btn').forEach(b => b.classList.remove('sel'));
   const firstAv = document.querySelector('.av-btn');
   if (firstAv) { firstAv.classList.add('sel'); selAv = firstAv.dataset.av || '🌙'; }
+
+  // Switch back to login tab
+  switchAuthTab('login', document.querySelector('.auth-tab'));
 }
 
 /* ════════════════════════════════════
@@ -489,8 +697,16 @@ function renderStats() {
 
   setText('st-saved', mems.length);
 
-  const myMems = mems.filter(m => m.creator === user.name || m.creator === 'demo');
-  const uniqPlaces = new Set(myMems.map(m => m.lat.toFixed(2) + ',' + m.lng.toFixed(2)));
+  // Count unique places from the current user's memories
+  const myMems = mems.filter(m =>
+    m.creatorUid === user.uid ||
+    m.creator === user.name ||
+    m.creator === user.name.toLowerCase()
+  );
+  const uniqPlaces = new Set(myMems.map(m => {
+    if (!m.lat || !m.lng) return null;
+    return m.lat.toFixed(2) + ',' + m.lng.toFixed(2);
+  }).filter(Boolean));
   setText('st-places', uniqPlaces.size);
 
   setText('st-unlocked', mems.filter(m => !m.locked).length);
@@ -499,9 +715,14 @@ function renderStats() {
     + msgs.filter(m => m.type === 'public' || m.type === 'interest').length;
   setText('st-nearby', drops);
 
-  setText('st-reactions', mems.reduce((s, m) => s + (m.likes || 0), 0));
+  const totalReactions = mems.reduce((s, m) => s + (m.likes || 0), 0);
+  setText('st-reactions', totalReactions);
 
-  const tagged = msgs.filter(m => m.taggedPerson === user.name).length;
+  // Badge: messages tagged to this user (match by uid or name)
+  const tagged = msgs.filter(m =>
+    (m.taggedUid && m.taggedUid === user.uid) ||
+    String(m.taggedPerson || '').toLowerCase() === String(user.name || '').toLowerCase()
+  ).length;
   const badge = document.getElementById('nbadge');
   if (badge) {
     badge.textContent = tagged;
@@ -1302,7 +1523,13 @@ async function likeIt() {
   dbLikeMemory(curDetailId).catch(e => console.warn('Like sync:', e));
 }
 
-function emojiReact(e) { showToast(e + ' Reaction added!'); }
+function emojiReact(emoji) {
+  if (!curDetailId) return;
+  showToast(emoji + ' Reaction added!');
+  if (typeof dbEmojiReact === 'function') {
+    dbEmojiReact(curDetailId, emoji).catch(e => console.warn('Emoji react:', e));
+  }
+}
 
 async function postComment() {
   const inp = document.getElementById('comment-inp');
@@ -1371,9 +1598,9 @@ async function submitFeedback() {
   document.querySelectorAll('.ck input:checked').forEach(cb => features.push(cb.value));
 
   const entry = {
-    name:     (document.getElementById('fb-name').value    || '').trim() || 'Anonymous',
+    name:     cleanText(document.getElementById('fb-name').value, 60) || 'Anonymous',
     rating:   fbRating,
-    text:     (document.getElementById('fb-thoughts').value|| '').trim() || '(no additional comments)',
+    text:     cleanText(document.getElementById('fb-thoughts').value, 1000) || '(no additional comments)',
     source:    document.getElementById('fb-source').value  || 'unknown',
     yn:       fbYN || 'unknown',
     features,
@@ -1381,8 +1608,17 @@ async function submitFeedback() {
     ts:       Date.now()
   };
 
-  try { await dbSaveFeedback(entry); }
-  catch(e) { console.warn('Feedback save error:', e); }
+  const btn = document.querySelector('#fb-form-card .btn-primary');
+  if (btn) { btn.textContent = 'Sending…'; btn.disabled = true; }
+
+  try {
+    await dbSaveFeedback(entry);
+  } catch(e) {
+    console.warn('Feedback save error:', e);
+    if (btn) { btn.textContent = 'Send Feedback ✨'; btn.disabled = false; }
+    showToast('❌ Could not save feedback. Try again.');
+    return;
+  }
 
   const fc = document.getElementById('fb-form-card');
   if (fc) fc.classList.add('hidden');
@@ -1392,21 +1628,31 @@ async function submitFeedback() {
   showToast('🙏 Thank you for your feedback!');
 }
 
-function renderFBPrev() {
-  const fbs  = getFB();
+async function renderFBPrev() {
   const list = document.getElementById('fb-prev-list');
   if (!list) return;
+
+  let fbs = [];
+  try {
+    fbs = await dbGetFeedbackForUser();
+  } catch (e) {
+    list.innerHTML = '';
+    return;
+  }
+
   if (!fbs.length) { list.innerHTML = ''; return; }
 
   const stars = ['😐','🙂','😊','🤩','🔥'];
   list.innerHTML = fbs.slice(0, 8).map(f => `
     <div class="fb-resp-card">
       <div class="fb-resp-top">
-        <div class="fb-resp-name">${f.name}</div>
+        <div class="fb-resp-name">${esc(f.name || 'Anonymous')}</div>
         <div class="fb-resp-rat">${stars[(f.rating||3) - 1] || '😊'}</div>
       </div>
-      <div class="fb-resp-txt">${f.text}</div>
-      <div class="fb-resp-src">via ${f.source} · ${f.yn==='yes'?'✅ Would use':f.yn==='maybe'?'🤔 Maybe':'❌ Not really'}</div>
+      <div class="fb-resp-txt">${esc(f.text || '')}</div>
+      <div class="fb-resp-src">via ${esc(f.source || 'unknown')} · ${
+        f.yn==='yes'?'✅ Would use':f.yn==='maybe'?'🤔 Maybe':'❌ Not really'
+      }</div>
     </div>`).join('');
 }
 
@@ -1593,7 +1839,7 @@ function errToText(err) {
 
 async function syncCloudData() {
   if (typeof SUPABASE_ENABLED === 'undefined' || !SUPABASE_ENABLED) return;
-  if (typeof dbGetPublicMemories !== 'function' || typeof dbGetPublicMessages !== 'function') return;
+  if (typeof dbGetPublicMemories !== 'function') return;
 
   try {
     const uid = (typeof getSessionUid === 'function' ? await getSessionUid() : null) || user.uid || null;
@@ -1601,19 +1847,20 @@ async function syncCloudData() {
     const [publicMems, publicMsgs, myMems, myMsgs] = await Promise.all([
       dbGetPublicMemories(null, 120),
       dbGetPublicMessages(120),
-      uid ? dbGetMyMemories(uid) : Promise.resolve([]),
-      uid ? dbGetMessagesForUser(uid) : Promise.resolve([])
+      uid && isCloudId(uid) ? dbGetMyMemories(uid) : Promise.resolve([]),
+      uid && isCloudId(uid) ? dbGetMessagesForUser(uid) : Promise.resolve([])
     ]);
 
+    // Merge: cloud UUIDs only — don't mix with local_* guest IDs
     const mergedMemsMap = new Map();
-    // In cloud mode, keep only cloud IDs to avoid mixing demo/local rows.
-    const existingCloudMems = getM().filter(m => isCloudId(m?.id));
-    [...existingCloudMems, ...publicMems, ...myMems].forEach(m => { if (m?.id) mergedMemsMap.set(m.id, m); });
+    [...publicMems, ...myMems].forEach(m => { if (m?.id) mergedMemsMap.set(m.id, m); });
+    // Keep local-only memories (guest drops not yet synced)
+    getM().filter(m => !isCloudId(m?.id)).forEach(m => { if (m?.id) mergedMemsMap.set(m.id, m); });
     saveM(Array.from(mergedMemsMap.values()));
 
     const mergedMsgsMap = new Map();
-    const existingCloudMsgs = getMsgs().filter(m => isCloudId(m?.id));
-    [...existingCloudMsgs, ...publicMsgs, ...myMsgs].forEach(m => { if (m?.id) mergedMsgsMap.set(m.id, m); });
+    [...publicMsgs, ...myMsgs].forEach(m => { if (m?.id) mergedMsgsMap.set(m.id, m); });
+    getMsgs().filter(m => !isCloudId(m?.id)).forEach(m => { if (m?.id) mergedMsgsMap.set(m.id, m); });
     saveMsgs(Array.from(mergedMsgsMap.values()));
 
     renderStats();
@@ -1621,10 +1868,11 @@ async function syncCloudData() {
 
     const active = document.querySelector('.s.active')?.id || '';
     if (active === 's-gallery') renderGallery();
-    if (active === 's-nearby') renderNearby();
-    if (active === 's-inbox') renderInbox();
-    if (active === 's-places') renderPlaces();
-    if (active === 's-unlock') renderUnlockList();
+    if (active === 's-nearby')  renderNearby();
+    if (active === 's-inbox')   renderInbox();
+    if (active === 's-places')  renderPlaces();
+    if (active === 's-unlock')  renderUnlockList();
+    if (active === 's-feedback') renderFBPrev();
   } catch (err) {
     console.warn('Cloud sync failed:', errToText(err));
   }

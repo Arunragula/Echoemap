@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════
-   supabase-config.js — Echoes Backend
+   supabase-config.js — Echoes Backend (Production)
    All DB operations, auth, storage
 ═══════════════════════════════════════════════ */
 
@@ -30,15 +30,11 @@ const sb = () => _supabase || window.SB;
 /* ─── ALWAYS GET FRESH UID ─── */
 async function _getUid() {
   if (!sb()) return null;
-  // Check existing session first — never create a new anon session if one exists
   const { data: { session } } = await sb().auth.getSession();
   if (session?.user?.id) return session.user.id;
   const { data: { user } } = await sb().auth.getUser();
   if (user?.id) return user.id;
-  // No session at all — create anonymous (rate limited, avoid repeated calls)
-  const { data, error } = await sb().auth.signInAnonymously();
-  if (error) { console.warn('Anon skipped:', error.message); return null; }
-  return data?.user?.id || null;
+  return null;
 }
 
 /* ═══════════════════════════════════════════════
@@ -49,7 +45,10 @@ async function signInWithGoogle() {
   if (!SUPABASE_ENABLED || !sb()) { showToast('Supabase not connected'); return null; }
   const { data, error } = await sb().auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: window.location.origin }
+    options: {
+      redirectTo: window.location.origin + '/?oauth_return=1',
+      queryParams: { access_type: 'offline', prompt: 'consent' }
+    }
   });
   if (error) { showToast('Sign-in failed: ' + error.message); return null; }
   return data;
@@ -57,13 +56,43 @@ async function signInWithGoogle() {
 
 async function signUpWithEmail(email, password, name, avatar) {
   if (!SUPABASE_ENABLED || !sb()) return null;
+
+  // First check if Supabase is reachable
+  if (!_sbReady) { showToast('Backend not ready. Refresh and try again.'); return null; }
+
   const { data, error } = await sb().auth.signUp({
-    email, password,
-    options: { data: { full_name: name, avatar: avatar || '🌙' } }
+    email,
+    password,
+    options: {
+      data: {
+        full_name: name,
+        username:  name,
+        avatar:    avatar || '🌙'
+      }
+    }
   });
-  if (error) { showToast('Sign up failed: ' + error.message); return null; }
-  if (data.user) await upsertUserProfile(data.user, name, avatar);
-  return data.user;
+
+  if (error) {
+    // 422 = email already registered or invalid
+    const msg = error.message || '';
+    if (msg.includes('already registered') || msg.includes('already exists') || error.status === 422) {
+      showToast('This email is already registered. Try logging in instead.');
+    } else if (msg.includes('Password')) {
+      showToast('Password must be at least 6 characters.');
+    } else if (msg.includes('valid email') || msg.includes('invalid')) {
+      showToast('Please enter a valid email address.');
+    } else {
+      showToast('Sign up failed: ' + msg);
+    }
+    return null;
+  }
+
+  // data.user exists but may not be confirmed yet (email confirmation enabled)
+  if (data?.user) {
+    await upsertUserProfile(data.user, name, avatar, name);
+  }
+
+  return data?.user || null;
 }
 
 async function signInWithEmail(email, password) {
@@ -85,12 +114,10 @@ async function resetPassword(email) {
 
 async function signInAnonymously() {
   if (!SUPABASE_ENABLED || !sb()) return null;
-  // Reuse existing session if available — prevents rate limit errors
   const { data: { session } } = await sb().auth.getSession();
   if (session?.user) return session.user;
   const { data: { user: existingUser } } = await sb().auth.getUser();
   if (existingUser) return existingUser;
-  // No existing session — create new anonymous one
   const { data, error } = await sb().auth.signInAnonymously();
   if (error) { console.error('Anon sign-in failed:', error); return null; }
   return data.user;
@@ -102,13 +129,19 @@ async function getSessionUid() {
   return data?.session?.user?.id || null;
 }
 
+async function getSessionUser() {
+  if (!SUPABASE_ENABLED || !sb()) return null;
+  const { data } = await sb().auth.getSession();
+  return data?.session?.user || null;
+}
+
 function listenAuthState(cb) {
   if (!SUPABASE_ENABLED || !sb()) return;
-  sb().auth.onAuthStateChange(async (_e, session) => {
+  sb().auth.onAuthStateChange(async (event, session) => {
     if (session?.user) {
       await upsertUserProfile(session.user);
     }
-    cb(session?.user || null);
+    cb(event, session?.user || null);
   });
 }
 
@@ -122,25 +155,54 @@ async function fbSignOut() {
   if (sb()) await sb().auth.signOut();
 }
 
-/* ─── USERS TABLE ──────────────────────────────
-   What gets stored here:
-   Google login  → name from Google, email, photo URL, auth_uid
-   Email signup  → name you chose, email, avatar emoji, auth_uid
-   Guest/anon    → name you typed, avatar emoji, auth_uid (anon uuid)
-   All auto-saved on every login via listenAuthState
+/* ─── CHECK IF USER NEEDS USERNAME SETUP ─────────
+   Returns true if profile exists with a non-generic username
 ─────────────────────────────────────────────── */
-async function upsertUserProfile(sbUser, name, avatar) {
+async function userNeedsUsernameSetup(sbUser) {
+  if (!sb() || !sbUser?.id) return false;
+  // Check if user has a real username in the users table
+  const { data } = await sb().from('users').select('username, name').eq('auth_uid', sbUser.id).single();
+  if (!data) return true; // no profile yet
+  // If username is just the email prefix or 'Explorer', they need setup
+  const emailPrefix = (sbUser.email || '').split('@')[0];
+  const name = data.username || data.name || '';
+  if (!name || name === 'Explorer' || name === emailPrefix) return true;
+  return false;
+}
+
+/* ─── USERS TABLE ─────────────────────────────── */
+async function upsertUserProfile(sbUser, name, avatar, username) {
   if (!sb() || !sbUser?.id) return;
   try {
+    const resolvedName     = name || sbUser.user_metadata?.full_name || sbUser.email?.split('@')[0] || 'Explorer';
+    const resolvedUsername = username || sbUser.user_metadata?.username || resolvedName;
+    const resolvedAvatar   = avatar || sbUser.user_metadata?.avatar || '🌙';
     await sb().from('users').upsert({
       auth_uid:  sbUser.id,
-      name:      name || sbUser.user_metadata?.full_name || sbUser.email?.split('@')[0] || 'Explorer',
-      avatar:    avatar || sbUser.user_metadata?.avatar || '🌙',
+      name:      resolvedName,
+      username:  resolvedUsername,
+      avatar:    resolvedAvatar,
       email:     sbUser.email || '',
       photo_url: sbUser.user_metadata?.avatar_url || '',
       last_seen: new Date().toISOString()
     }, { onConflict: 'auth_uid' });
   } catch (e) { console.warn('upsertUserProfile failed:', e.message); }
+}
+
+async function updateUsername(uid, username, avatar) {
+  if (!sb() || !uid) return false;
+  try {
+    const { error } = await sb().from('users').update({
+      name:     username,
+      username: username,
+      avatar:   avatar || '🌙',
+      last_seen: new Date().toISOString()
+    }).eq('auth_uid', uid);
+    if (error) throw error;
+    // Also update auth metadata
+    await sb().auth.updateUser({ data: { full_name: username, username, avatar } });
+    return true;
+  } catch (e) { console.warn('updateUsername failed:', e.message); return false; }
 }
 
 /* ═══════════════════════════════════════════════
@@ -149,11 +211,7 @@ async function upsertUserProfile(sbUser, name, avatar) {
 async function dbSaveMemory(data) {
   if (!SUPABASE_ENABLED || !sb()) return data.id;
   const uid = await _getUid();
-  if (!uid) {
-    // Auth unavailable (rate limited etc) — caller still saves to localStorage
-    console.warn('No uid — cloud save skipped');
-    return data.id;
-  }
+  if (!uid) { console.warn('No uid — cloud save skipped'); return data.id; }
 
   const { data: r, error } = await sb().from('memories').insert({
     caption:       data.caption,
@@ -206,16 +264,10 @@ async function dbUnlockMemory(memId) {
   await sb().from('memories').update({ locked: false }).eq('id', memId);
 }
 
-/* ─── LIKES + REACTIONS ─────────────────────────
-   reactions table: tracks WHO liked WHAT (uid, memory_id, emoji)
-   memories.likes:  the running count shown in UI
-─────────────────────────────────────────────── */
+/* ─── LIKES + REACTIONS ─────────────────────────── */
 async function dbLikeMemory(memId) {
   if (!SUPABASE_ENABLED || !sb() || !_isUuid(memId)) return;
-
   const uid = await _getUid();
-
-  // Insert into reactions table
   try {
     await sb().from('reactions').upsert({
       memory_id: memId,
@@ -223,48 +275,23 @@ async function dbLikeMemory(memId) {
       emoji:     'heart'
     }, { onConflict: 'memory_id,uid,emoji', ignoreDuplicates: true });
   } catch (e) { console.warn('Reaction upsert failed:', e.message); }
+  // Increment likes count
+  const { data: mem } = await sb().from('memories').select('likes').eq('id', memId).single();
+  if (mem) {
+    await sb().from('memories').update({ likes: (mem.likes || 0) + 1 }).eq('id', memId);
+  }
+}
 
-  // Update likes count on memories row
+async function dbEmojiReact(memId, emoji) {
+  if (!SUPABASE_ENABLED || !sb() || !_isUuid(memId)) return;
+  const uid = await _getUid();
   try {
-    const { error } = await sb().rpc('increment_likes', { memory_id: memId });
-    if (error) throw error;
-  } catch {
-    try {
-      const { data: row } = await sb().from('memories').select('likes').eq('id', memId).single();
-      await sb().from('memories').update({ likes: (row?.likes || 0) + 1 }).eq('id', memId);
-    } catch (e) { console.warn('likes count update failed:', e.message); }
-  }
-}
-
-async function dbDeleteMemory(memId) {
-  if (!SUPABASE_ENABLED || !sb()) {
-    _ls('e_memories', _lg('e_memories').filter(m => m.id !== memId));
-    return;
-  }
-  if (!_isUuid(memId)) return;
-  await sb().from('memories').delete().eq('id', memId);
-}
-
-/* ═══════════════════════════════════════════════
-   IMAGE UPLOAD
-═══════════════════════════════════════════════ */
-async function dbUploadImage(file, bucketPath) {
-  if (!SUPABASE_ENABLED || !sb()) {
-    return new Promise((res, rej) => {
-      const r = new FileReader();
-      r.onload = e => res(e.target.result);
-      r.onerror = rej;
-      r.readAsDataURL(file);
-    });
-  }
-  const [bucket, ...rest] = bucketPath.split('/');
-  const path = rest.join('/');
-  const { error } = await sb().storage.from(bucket).upload(path, file, {
-    cacheControl: '3600', upsert: true
-  });
-  if (error) throw error;
-  const { data } = sb().storage.from(bucket).getPublicUrl(path);
-  return data.publicUrl;
+    await sb().from('reactions').upsert({
+      memory_id: memId,
+      uid:       uid || 'anon',
+      emoji
+    }, { onConflict: 'memory_id,uid,emoji', ignoreDuplicates: true });
+  } catch (e) { console.warn('Emoji react failed:', e.message); }
 }
 
 /* ═══════════════════════════════════════════════
@@ -273,17 +300,14 @@ async function dbUploadImage(file, bucketPath) {
 async function dbSaveMessage(data) {
   if (!SUPABASE_ENABLED || !sb()) return data.id;
   const uid = await _getUid();
-  if (!uid) {
-    console.warn('No uid — message cloud save skipped');
-    return data.id;
-  }
+  if (!uid) { console.warn('No uid — cloud save skipped'); return data.id; }
 
   const { data: r, error } = await sb().from('messages').insert({
     type:          data.type,
     text:          data.text,
-    tagged_person: data.taggedPerson  || null,
-    tagged_uid:    data.taggedUid     || null,
-    category:      data.category      || 'nostalgia',
+    tagged_person: data.taggedPerson || null,
+    tagged_uid:    data.taggedUid    || null,
+    category:      data.category     || 'nostalgia',
     lat:           data.lat,
     lng:           data.lng,
     location_name: data.locationName  || null,
@@ -321,17 +345,14 @@ async function dbGetPublicMessages(count = 50) {
 ═══════════════════════════════════════════════ */
 async function dbAddComment(memId, text, uid, name) {
   if (!SUPABASE_ENABLED || !sb() || !_isUuid(memId)) return { synced: false };
-
   const sessionUid = await _getUid();
   if (!sessionUid) return { synced: false };
-
   const { error } = await sb().from('comments').insert({
     memory_id:   memId,
     text,
     author_uid:  sessionUid,
     author_name: name || 'Explorer'
   });
-
   if (error) { console.warn('Comment sync failed:', error.message); return { synced: false }; }
   return { synced: true };
 }
@@ -355,15 +376,8 @@ async function dbGetComments(memId) {
    FEEDBACK
 ═══════════════════════════════════════════════ */
 async function dbSaveFeedback(data) {
-  // Save locally always
-  const l = _lg('e_feedback');
-  l.unshift(data);
-  _ls('e_feedback', l);
-
   if (!SUPABASE_ENABLED || !sb()) return;
-
   const uid = await _getUid();
-
   const { error } = await sb().from('feedback').insert({
     name:     data.name     || 'Anonymous',
     rating:   data.rating,
@@ -373,8 +387,15 @@ async function dbSaveFeedback(data) {
     features: data.features || [],
     uid:      uid           || null
   });
-
   if (error) console.warn('Feedback cloud save failed:', error.message);
+}
+
+async function dbGetFeedbackForUser() {
+  if (!SUPABASE_ENABLED || !sb()) return [];
+  const { data, error } = await sb().from('feedback').select('*')
+    .order('created_at', { ascending: false }).limit(20);
+  if (error) return [];
+  return data || [];
 }
 
 /* ═══════════════════════════════════════════════
@@ -410,26 +431,28 @@ function dbStopNearby() {
    ADMIN
 ═══════════════════════════════════════════════ */
 async function dbGetAllFeedback() {
-  if (!SUPABASE_ENABLED || !sb()) return _lg('e_feedback');
+  if (!SUPABASE_ENABLED || !sb()) return [];
   const { data } = await sb().from('feedback').select('*').order('created_at', { ascending: false });
-  return data || _lg('e_feedback');
+  return data || [];
 }
 
 async function dbGetAllMemories(count = 200) {
-  if (!SUPABASE_ENABLED || !sb()) return _lg('e_memories');
+  if (!SUPABASE_ENABLED || !sb()) return [];
   const { data } = await sb().from('memories').select('*')
     .order('created_at', { ascending: false }).limit(count);
   return (data || []).map(_mf);
 }
 
+async function dbGetAllUsers(count = 200) {
+  if (!SUPABASE_ENABLED || !sb()) return [];
+  const { data } = await sb().from('users').select('*')
+    .order('last_seen', { ascending: false }).limit(count);
+  return data || [];
+}
+
 async function dbGetCounts() {
   if (!SUPABASE_ENABLED || !sb()) {
-    return {
-      memories: _lg('e_memories').length,
-      messages: _lg('e_messages').length,
-      feedback: _lg('e_feedback').length,
-      users: 0
-    };
+    return { memories: 0, messages: 0, feedback: 0, users: 0 };
   }
   const [m, msg, fb, u] = await Promise.all([
     sb().from('memories').select('*', { count: 'exact', head: true }),
@@ -443,6 +466,21 @@ async function dbGetCounts() {
     feedback: fb.count  || 0,
     users:    u.count   || 0
   };
+}
+
+async function dbDeleteMemory(id) {
+  if (!SUPABASE_ENABLED || !sb()) return;
+  await sb().from('memories').delete().eq('id', id);
+}
+
+async function dbDeleteFeedback(id) {
+  if (!SUPABASE_ENABLED || !sb()) return;
+  await sb().from('feedback').delete().eq('id', id);
+}
+
+async function dbBanUser(authUid) {
+  if (!SUPABASE_ENABLED || !sb()) return;
+  await sb().from('users').update({ banned: true }).eq('auth_uid', authUid);
 }
 
 /* ═══════════════════════════════════════════════
